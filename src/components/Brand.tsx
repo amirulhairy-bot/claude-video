@@ -9,11 +9,11 @@ import { Pill } from "./kit";
  */
 export const LavenderGrade: React.FC = () => (
   <>
-    <AbsoluteFill style={{ background: THEME.light, mixBlendMode: "screen", opacity: 0.12 }} />
-    <AbsoluteFill style={{ background: THEME.primary, mixBlendMode: "color", opacity: 0.06 }} />
+    <AbsoluteFill style={{ background: "#FFF8FC", mixBlendMode: "screen", opacity: 0.12 }} />
+    <AbsoluteFill style={{ background: THEME.primary, mixBlendMode: "color", opacity: 0.02 }} />
     <AbsoluteFill
       style={{
-        background: "radial-gradient(ellipse 80% 65% at 50% 45%, rgba(246,227,244,0) 60%, rgba(246,227,244,0.45) 100%)",
+        background: "radial-gradient(ellipse 80% 65% at 50% 45%, rgba(246,227,244,0) 60%, rgba(246,227,244,0.2) 100%)",
       }}
     />
   </>
