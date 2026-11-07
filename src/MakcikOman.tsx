@@ -1,6 +1,6 @@
 import { AbsoluteFill, Audio, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { CONTENT_FRAMES, CUTS, FPS, OUTRO_FRAMES, SEGMENT_START_FRAMES, f } from "./data";
-import { LavenderGrade, Outro, Watermark } from "./components/Brand";
+import { FOOTAGE_FILTER, LavenderGrade, Outro, Watermark } from "./components/Brand";
 import { Captions } from "./components/Captions";
 import { Hook, HOOK_FRAMES, HOOK_SWITCH } from "./components/Hook";
 import { Scenes } from "./components/Scenes";
@@ -69,7 +69,7 @@ const Footage: React.FC = () => {
   // slow push-in across the whole edit
   const drift = interpolate(frame, [0, f(41.5)], [1.0, 1.06]);
   return (
-    <AbsoluteFill style={{ transform: `scale(${drift + punch})`, transformOrigin: "50% 45%" }}>
+    <AbsoluteFill style={{ transform: `scale(${drift + punch})`, transformOrigin: "50% 45%", filter: FOOTAGE_FILTER }}>
       {CUTS.map(([a, b], i) => (
         <Sequence key={i} from={SEGMENT_START_FRAMES[i]} durationInFrames={Math.round((b - a) * FPS)}>
           <OffthreadVideo src={staticFile("main.mp4")} startFrom={Math.round(a * FPS)} />

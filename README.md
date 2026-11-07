@@ -9,7 +9,7 @@ Vertical 1080×1920 / 30fps edit for TikTok & Instagram Reels, built with [Remot
 - **Karaoke captions**: word-by-word highlight, keywords coloured (sejuk = ice blue, hangat = orange, beli = green).
 - **Motion graphics**: Bukan Iklan stamp, travel plane, Sebab Apa?, Oman location + falling thermometer + snow, tip card, warm glow + rising thermometer, Mami-mami, WAJIB BELI stamp, checklist, CUBALAH + Follow CTA.
 - **Sound effects**: synthesized, royalty-free (`scripts/make_sfx.py` → `public/sfx/`): impact, riser, whoosh, swoosh, pop, tick, click, ding, sparkle.
-- **Branding**: Lavender Confinement Care logo watermark (top-left, safe zone), lavender colour grade + plum vignette, and a branded logo end card. Palette in `src/theme.ts` (logo purple #AC56A1).
+- **Branding**: Lavender Confinement Care logo watermark (top-left, safe zone), bright lavender colour grade (lifted, soft lavender edge glow), and a branded logo end card. Palette in `src/theme.ts` (logo purple #AC56A1).
 - **Voice**: denoised + loudness normalised to −14 LUFS.
 
 ## Safe zones / face rule
