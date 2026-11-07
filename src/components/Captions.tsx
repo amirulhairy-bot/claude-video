@@ -41,9 +41,9 @@ export const Captions: React.FC = () => {
           flexWrap: "wrap",
           justifyContent: "center",
           alignContent: "center",
-          columnGap: 34,
-          rowGap: 4,
-          transform: `translateY(${(1 - enter) * 40}px) scale(${0.85 + 0.15 * enter})`,
+          columnGap: 17,
+          rowGap: 2,
+          transform: `translateY(${(1 - enter) * 20}px) scale(${0.85 + 0.15 * enter})`,
           opacity: enter,
         }}
       >
@@ -62,15 +62,15 @@ export const Captions: React.FC = () => {
               style={{
                 fontFamily: FONT,
                 fontWeight: 900,
-                fontSize: long ? 76 : 88,
+                fontSize: long ? 38 : 44,
                 lineHeight: 1.12,
                 textTransform: "uppercase",
                 letterSpacing: -1,
                 color,
                 opacity: spoken ? 1 : 0.85,
-                WebkitTextStroke: `14px ${THEME.ink}`,
+                WebkitTextStroke: `7px ${THEME.ink}`,
                 paintOrder: "stroke fill",
-                textShadow: `0 8px 0 ${THEME.inkShadow}, 0 0 30px rgba(110,42,102,0.45)`,
+                textShadow: `0 4px 0 ${THEME.inkShadow}, 0 0 15px rgba(110,42,102,0.45)`,
                 transform: `scale(${scale}) rotate(${active ? interpolate(pop, [0, 1], [-4, 0]) : 0}deg)`,
                 display: "inline-block",
               }}
