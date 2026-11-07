@@ -19,24 +19,8 @@ export const LavenderGrade: React.FC = () => (
   </>
 );
 
-/**
- * Footage brightening. A gamma lift (SVG feComponentTransfer, exponent < 1) raises
- * faces, shadows and mid-tones strongly while the already-bright sky barely clips,
- * then a small linear brightness/saturation boost on top.
- */
-const GAMMA = 0.6;
-export const FootageFilterDefs: React.FC = () => (
-  <svg width={0} height={0} style={{ position: "absolute" }}>
-    <filter id="bright-lift" colorInterpolationFilters="sRGB">
-      <feComponentTransfer>
-        <feFuncR type="gamma" amplitude={1} exponent={GAMMA} offset={0} />
-        <feFuncG type="gamma" amplitude={1} exponent={GAMMA} offset={0} />
-        <feFuncB type="gamma" amplitude={1} exponent={GAMMA} offset={0} />
-      </feComponentTransfer>
-    </filter>
-  </svg>
-);
-export const FOOTAGE_FILTER = "url(#bright-lift) brightness(1.08) contrast(1.05) saturate(1.12)";
+/** CSS filter applied to the footage so it reads bright and clean. */
+export const FOOTAGE_FILTER = "brightness(1.12) contrast(1.04) saturate(1.05)";
 
 /** Small round logo bug, top-left inside the TikTok/IG safe zone (left of the sky graphics band). */
 export const Watermark: React.FC = () => {
