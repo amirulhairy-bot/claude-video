@@ -1,5 +1,6 @@
 import { AbsoluteFill, Audio, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { CUTS, FPS, SEGMENT_START_FRAMES, f } from "./data";
+import { CONTENT_FRAMES, CUTS, FPS, OUTRO_FRAMES, SEGMENT_START_FRAMES, f } from "./data";
+import { LavenderGrade, Outro, Watermark } from "./components/Brand";
 import { Captions } from "./components/Captions";
 import { Hook, HOOK_FRAMES, HOOK_SWITCH } from "./components/Hook";
 import { Scenes } from "./components/Scenes";
@@ -45,6 +46,11 @@ const SFX: Sfx[] = [
   { at: f(38.8) + 4, src: s("pop"), vol: 0.6 },
   { at: f(38.8) + 6, src: s("sparkle"), vol: 0.4 },
   { at: f(40.24), src: s("swoosh"), vol: 0.4 },
+  // ---- branded end card ----
+  { at: CONTENT_FRAMES - 2, src: s("whoosh"), vol: 0.5 },
+  { at: CONTENT_FRAMES + 8, src: s("sparkle"), vol: 0.5 },
+  { at: CONTENT_FRAMES + 14, src: s("ding"), vol: 0.4 },
+  { at: CONTENT_FRAMES + 22, src: s("pop"), vol: 0.45 },
 ];
 
 /** Frames where the footage gets a zoom "punch" for energy. */
@@ -76,11 +82,18 @@ const Footage: React.FC = () => {
 export const MakcikOman: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: "#000" }}>
     <Footage />
+    <LavenderGrade />
     <Scenes />
     <Sequence durationInFrames={HOOK_FRAMES} layout="none">
       <Hook />
     </Sequence>
     <Captions />
+    <Sequence durationInFrames={CONTENT_FRAMES} layout="none">
+      <Watermark />
+    </Sequence>
+    <Sequence from={CONTENT_FRAMES} durationInFrames={OUTRO_FRAMES}>
+      <Outro />
+    </Sequence>
     {SFX.map((x, i) => (
       <Sequence key={i} from={x.at} layout="none">
         <Audio src={x.src} volume={x.vol} />

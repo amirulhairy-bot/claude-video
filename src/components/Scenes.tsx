@@ -4,6 +4,7 @@ import { SAFE, f } from "../data";
 import { FONT } from "../font";
 import { CheckIcon, FlameIcon, Pill, PinIcon, PlaneIcon, Slam, Stamp, Thermometer, stroke, useInOut } from "./kit";
 import { SkySnow } from "./Hook";
+import { THEME } from "../theme";
 
 /** Container for every mid-video graphic: confined to the sky band above the speaker's head. */
 const Sky: React.FC<{ dur: number; children: React.ReactNode; row?: boolean }> = ({ dur, children, row }) => {
@@ -12,8 +13,8 @@ const Sky: React.FC<{ dur: number; children: React.ReactNode; row?: boolean }> =
     <div
       style={{
         position: "absolute",
-        left: SAFE.left,
-        width: SAFE.right - SAFE.left,
+        left: SAFE.skyLeft,
+        width: SAFE.right - SAFE.skyLeft,
         top: SAFE.skyTop,
         height: SAFE.skyBottom - SAFE.skyTop,
         display: "flex",
@@ -32,9 +33,9 @@ const Sky: React.FC<{ dur: number; children: React.ReactNode; row?: boolean }> =
 
 const NotAnAd: React.FC<{ dur: number; checkAt: number }> = ({ dur, checkAt }) => (
   <Sky dur={dur}>
-    <Stamp text="Bukan Iklan!" color="#FF3B3B" size={104} />
-    <Pill at={checkAt} bg="#111" size={40}>
-      <CheckIcon size={44} /> Makcik guna sendiri
+    <Stamp text="Bukan Iklan!" color={THEME.highlight} size={84} />
+    <Pill at={checkAt} bg={THEME.primary} color="#fff" size={38}>
+      <CheckIcon size={42} color="#fff" /> Makcik guna sendiri
     </Pill>
   </Sky>
 );
@@ -60,8 +61,8 @@ const Travel: React.FC<{ dur: number }> = ({ dur }) => {
       <div style={{ position: "absolute", left: x - 55, top: y - 55, transform: "rotate(90deg)" }}>
         <PlaneIcon size={110} />
       </div>
-      <div style={{ position: "absolute", left: SAFE.left, width: SAFE.right - SAFE.left, top: 400, textAlign: "center" }}>
-        <Slam text="Teman travel wajib" at={6} size={72} bg="#0E7CFF" />
+      <div style={{ position: "absolute", left: SAFE.skyLeft, width: SAFE.right - SAFE.skyLeft, top: 400, textAlign: "center" }}>
+        <Slam text="Teman travel wajib" at={6} size={58} bg={THEME.primary} />
       </div>
     </>
   );
@@ -69,8 +70,8 @@ const Travel: React.FC<{ dur: number }> = ({ dur }) => {
 
 const WhyFunction: React.FC<{ dur: number; answerAt: number }> = ({ dur, answerAt }) => (
   <Sky dur={dur}>
-    <Slam text="Sebab apa?" at={0} size={108} rotate={-2} />
-    <Slam text="Fungsi dia BESAR!" at={answerAt} size={70} bg="#FFE14D" color="#111" rotate={2} />
+    <Slam text="Sebab apa?" at={0} size={96} rotate={-2} />
+    <Slam text="Fungsi dia BESAR!" at={answerAt} size={58} bg={THEME.light} color={THEME.primaryDark} rotate={2} />
   </Sky>
 );
 
@@ -81,13 +82,13 @@ const OmanCold: React.FC<{ dur: number; slamAt: number }> = ({ dur, slamAt }) =>
     <>
       <SkySnow count={22} opacity={interpolate(frame, [dur - 10, dur], [1, 0], { extrapolateLeft: "clamp" })} />
       <Sky dur={dur} row>
-        <Thermometer progress={drop} from={0.75} to={0.12} color="#3BB6FF" height={330} />
+        <Thermometer progress={drop} from={0.75} to={0.12} color={THEME.thermoCold} height={320} />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 14 }}>
-          <Pill bg="#fff" color="#111" size={44}>
+          <Pill size={42}>
             <PinIcon size={46} /> Oman
           </Pill>
           <Slam text="Gurun" at={8} size={96} />
-          <Slam text="Sejuk sangat!" at={slamAt} size={80} color="#8FE3FF" />
+          <Slam text="Sejuk sangat!" at={slamAt} size={70} color={THEME.cold} />
         </div>
       </Sky>
     </>
@@ -96,11 +97,11 @@ const OmanCold: React.FC<{ dur: number; slamAt: number }> = ({ dur, slamAt }) =>
 
 const ApplyTip: React.FC<{ dur: number; secondAt: number }> = ({ dur, secondAt }) => (
   <Sky dur={dur}>
-    <Pill bg="#FFE14D" color="#111" size={40}>
+    <Pill bg={THEME.primary} color="#fff" size={38}>
       Tip makcik
     </Pill>
-    <Slam text="Sapu dulu" at={4} size={110} />
-    <Slam text="sebelum keluar!" at={secondAt} size={72} color="#FFE14D" />
+    <Slam text="Sapu dulu" at={4} size={104} />
+    <Slam text="sebelum keluar!" at={secondAt} size={66} color={THEME.highlight} />
   </Sky>
 );
 
@@ -112,18 +113,18 @@ const Warm: React.FC<{ dur: number }> = ({ dur }) => {
     <>
       <AbsoluteFill
         style={{
-          background: "linear-gradient(180deg, rgba(255,110,20,0.5) 0%, rgba(255,110,20,0) 36%)",
+          background: "linear-gradient(180deg, rgba(224,72,158,0.45) 0%, rgba(172,86,161,0) 38%)",
           opacity: glow,
         }}
       />
       <Sky dur={dur} row>
-        <Thermometer progress={rise} from={0.12} to={0.92} color="#FF3D1F" height={330} />
+        <Thermometer progress={rise} from={0.12} to={0.92} color={THEME.thermoWarm} height={320} />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
           <Slam text="Badan" at={2} size={90} />
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Slam text="Hangat!" at={9} size={120} color="#FF8A2A" />
+            <Slam text="Hangat!" at={9} size={104} color={THEME.warm} />
             <div style={{ transform: `scale(${1 + Math.sin(frame / 3) * 0.1})` }}>
-              <FlameIcon size={110} />
+              <FlameIcon size={96} />
             </div>
           </div>
         </div>
@@ -134,8 +135,8 @@ const Warm: React.FC<{ dur: number }> = ({ dur }) => {
 
 const Mami: React.FC<{ dur: number; lupaAt: number }> = ({ dur, lupaAt }) => (
   <Sky dur={dur}>
-    <Slam text="Mami-mami semua!" at={4} size={80} bg="#FF4FA3" color="#fff" rotate={-2} />
-    <Slam text="Jangan lupa!" at={lupaAt} size={104} color="#FFE14D" />
+    <Slam text="Mommies semua!" at={4} size={76} bg={THEME.primary} color="#fff" rotate={-2} />
+    <Slam text="Jangan lupa!" at={lupaAt} size={96} color={THEME.highlight} />
   </Sky>
 );
 
@@ -145,7 +146,7 @@ const MustBuy: React.FC<{ dur: number }> = ({ dur }) => {
   return (
     <Sky dur={dur}>
       <div style={{ transform: `translateX(${shake}px)` }}>
-        <Stamp text="Wajib beli!" color="#3DF58A" size={124} rotate={-6} />
+        <Stamp text="Wajib beli!" color={THEME.highlight} size={100} rotate={-6} />
       </div>
     </Sky>
   );
@@ -157,7 +158,7 @@ const ManyUses: React.FC<{ dur: number }> = ({ dur }) => {
   const { fps } = useVideoConfig();
   return (
     <Sky dur={dur}>
-      <Slam text="Banyak kegunaan" at={0} size={74} bg="#0E7CFF" />
+      <Slam text="Banyak kegunaan" at={0} size={62} bg={THEME.primary} />
       <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
         {ITEMS.map((t, i) => {
           const at = 14 + i * 14;
@@ -173,13 +174,13 @@ const ManyUses: React.FC<{ dur: number }> = ({ dur }) => {
                 transform: `translateX(${(1 - s) * 120}px)`,
                 fontFamily: FONT,
                 fontWeight: 900,
-                fontSize: 56,
+                fontSize: 50,
                 color: "#fff",
                 textTransform: "uppercase",
                 ...stroke(12),
               }}
             >
-              <CheckIcon size={58} /> {t}
+              <CheckIcon size={52} /> {t}
             </div>
           );
         })}
@@ -190,8 +191,8 @@ const ManyUses: React.FC<{ dur: number }> = ({ dur }) => {
 
 const Cta: React.FC<{ dur: number; followAt: number }> = ({ dur, followAt }) => (
   <Sky dur={dur + 10}>
-    <Slam text="Cubalah!" at={4} size={150} color="#3DF58A" rotate={-3} />
-    <Pill at={followAt} bg="#E8202A" size={44}>
+    <Slam text="Cubalah!" at={4} size={128} color={THEME.highlight} rotate={-3} />
+    <Pill at={followAt} bg={THEME.primary} color="#fff" size={40}>
       Follow untuk tips makcik
     </Pill>
   </Sky>

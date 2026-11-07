@@ -1,6 +1,7 @@
 import { AbsoluteFill, interpolate, random, useCurrentFrame, useVideoConfig, spring } from "remotion";
 import { SAFE } from "../data";
 import { FlameIcon, Pill, PinIcon, Slam, Snowflake } from "./kit";
+import { THEME } from "../theme";
 
 export const HOOK_FRAMES = 104;
 export const HOOK_SWITCH = 50; // question -> answer
@@ -28,7 +29,7 @@ export const SkySnow: React.FC<{ count?: number; opacity?: number }> = ({ count 
               top: y,
               opacity: fade * 0.9,
               transform: `rotate(${frame * (i % 2 ? 2 : -2)}deg)`,
-              filter: "drop-shadow(0 0 6px rgba(120,200,255,0.9))",
+              filter: "drop-shadow(0 0 6px rgba(242,184,240,0.95))",
             }}
           >
             <Snowflake size={size} />
@@ -64,7 +65,7 @@ export const Hook: React.FC = () => {
       {!phaseA ? (
         <AbsoluteFill
           style={{
-            background: "linear-gradient(180deg, rgba(255,120,30,0.45) 0%, rgba(255,120,30,0) 34%)",
+            background: "linear-gradient(180deg, rgba(172,86,161,0.55) 0%, rgba(172,86,161,0) 36%)",
             opacity: bInt * (1 - exit),
           }}
         />
@@ -73,8 +74,8 @@ export const Hook: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          left: SAFE.left,
-          width: SAFE.right - SAFE.left,
+          left: SAFE.skyLeft,
+          width: SAFE.right - SAFE.skyLeft,
           top: SAFE.skyTop,
           height: SAFE.skyBottom - SAFE.skyTop,
           display: "flex",
@@ -86,29 +87,29 @@ export const Hook: React.FC = () => {
           opacity: 1 - exit,
         }}
       >
-        <Pill at={2} bg="#fff" color="#111" size={38}>
+        <Pill at={2} size={38}>
           <PinIcon size={40} /> Padang Pasir, Oman
         </Pill>
 
         {phaseA ? (
           <>
-            <Slam text="SEJUK" at={6} size={200} color="#8FE3FF" strokePx={20} rotate={-3} />
+            <Slam text="SEJUK" at={6} size={190} color={THEME.cold} strokePx={20} rotate={-3} />
             <div style={{ display: "flex", gap: 22 }}>
-              <Slam text="GILA" at={16} size={78} />
-              <Slam text="KAT" at={22} size={78} />
-              <Slam text="GURUN?!" at={28} size={78} color="#FFE14D" />
+              <Slam text="GILA" at={16} size={74} />
+              <Slam text="KAT" at={22} size={74} />
+              <Slam text="GURUN?!" at={28} size={74} color={THEME.highlight} />
             </div>
           </>
         ) : (
           <>
-            <Slam text="INI SENJATA" at={HOOK_SWITCH} size={84} bg="#E8202A" color="#fff" rotate={-2} />
+            <Slam text="INI SENJATA" at={HOOK_SWITCH} size={84} bg={THEME.primary} color="#fff" rotate={-2} />
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ transform: `scale(${flamePulse * bInt})` }}>
-                <FlameIcon size={120} />
+                <FlameIcon size={100} />
               </div>
-              <Slam text="MAKCIK!" at={HOOK_SWITCH + 7} size={170} color="#FFE14D" strokePx={20} rotate={2} />
+              <Slam text="MAKCIK!" at={HOOK_SWITCH + 7} size={140} color={THEME.highlight} strokePx={20} rotate={2} />
               <div style={{ transform: `scale(${flamePulse * bInt}) scaleX(-1)` }}>
-                <FlameIcon size={120} />
+                <FlameIcon size={100} />
               </div>
             </div>
           </>
@@ -118,7 +119,7 @@ export const Hook: React.FC = () => {
       {/* white flash on each beat */}
       <AbsoluteFill
         style={{
-          background: "#fff",
+          background: THEME.light,
           opacity:
             interpolate(frame, [0, 5], [0.85, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) +
             interpolate(frame, [HOOK_SWITCH, HOOK_SWITCH + 5], [0.6, 0], {

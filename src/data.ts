@@ -21,7 +21,10 @@ const segStarts: number[] = [];
 }
 
 export const TOTAL_SECONDS = CUTS.reduce((s, [a, b]) => s + (b - a), 0);
-export const TOTAL_FRAMES = Math.round(TOTAL_SECONDS * FPS);
+/** Branded Lavender end card appended after the last spoken word. */
+export const OUTRO_FRAMES = 75;
+export const CONTENT_FRAMES = Math.round(TOTAL_SECONDS * FPS);
+export const TOTAL_FRAMES = CONTENT_FRAMES + OUTRO_FRAMES;
 
 /** Output frame at which each segment starts (used for jump-cut zoom punches). */
 export const SEGMENT_START_FRAMES = segStarts.map((s) => Math.round(s * FPS));
@@ -49,6 +52,7 @@ export const SAFE = {
   left: 60,
   right: 940, // 1080 - 140 (action rail)
   centerX: 500,
+  skyLeft: 180, // sky graphics start right of the logo watermark (x 60-164)
   skyTop: 230,
   skyBottom: 630, // never draw below this in the sky band (top of hijab ≈ 670)
   captionTop: 1230, // below the product tubes
@@ -80,7 +84,7 @@ export const PAGES: Word[][] = [
   [{ w: "kita", s: 26.94, e: 27.12 }, { w: "berada", s: 27.12, e: 27.46 }, { w: "di", s: 27.46, e: 27.62 }, { w: "luar", s: 27.62, e: 27.9 }],
   [{ w: "Sapu,", s: 28.08, e: 28.4, k: "warm" }, { w: "dia", s: 28.4, e: 28.66 }, { w: "akan", s: 28.66, e: 28.94 }],
   [{ w: "menghangatkan", s: 28.94, e: 29.52, k: "warm" }, { w: "badan", s: 29.52, e: 29.86 }, { w: "kita", s: 29.86, e: 30.04 }],
-  [{ w: "So", s: 30.18, e: 30.64 }, { w: "you", s: 30.64, e: 30.94 }, { w: "mami-mami", s: 30.94, e: 31.96, k: "hot" }],
+  [{ w: "So", s: 30.18, e: 30.64 }, { w: "you", s: 30.64, e: 30.94 }, { w: "mommies", s: 30.94, e: 31.96, k: "hot" }],
   [{ w: "semua", s: 31.96, e: 32.18 }, { w: "di", s: 32.18, e: 32.4 }, { w: "luar", s: 32.4, e: 32.68 }],
   [{ w: "jangan", s: 32.68, e: 32.86 }, { w: "lupalah!", s: 32.86, e: 33.3, k: "hot" }],
   [{ w: "Jangan", s: 33.4, e: 34.0 }, { w: "tak", s: 34.0, e: 34.32 }, { w: "beli!", s: 34.32, e: 34.62, k: "buy" }],

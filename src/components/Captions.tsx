@@ -1,15 +1,16 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { PAGES, SAFE, f, type Word } from "../data";
 import { FONT } from "../font";
+import { THEME } from "../theme";
 
 const KEY_COLORS: Record<NonNullable<Word["k"]>, string> = {
-  cold: "#7FDBFF",
-  warm: "#FF8A2A",
-  buy: "#3DF58A",
-  hot: "#FFE14D",
+  cold: THEME.cold,
+  warm: THEME.warm,
+  buy: THEME.highlight,
+  hot: THEME.highlight,
 };
 
-const ACTIVE = "#FFE14D";
+const ACTIVE = THEME.highlight;
 
 /** Word-by-word karaoke captions, locked in the chest band (never over the face). */
 export const Captions: React.FC = () => {
@@ -67,9 +68,9 @@ export const Captions: React.FC = () => {
                 letterSpacing: -1,
                 color,
                 opacity: spoken ? 1 : 0.85,
-                WebkitTextStroke: "14px #000",
+                WebkitTextStroke: `14px ${THEME.ink}`,
                 paintOrder: "stroke fill",
-                textShadow: "0 8px 0 rgba(0,0,0,0.55), 0 0 30px rgba(0,0,0,0.35)",
+                textShadow: `0 8px 0 ${THEME.inkShadow}, 0 0 30px rgba(110,42,102,0.45)`,
                 transform: `scale(${scale}) rotate(${active ? interpolate(pop, [0, 1], [-4, 0]) : 0}deg)`,
                 display: "inline-block",
               }}
