@@ -717,14 +717,17 @@ export const LogoBadge: React.FC = () => {
         left: safe.left,
         transform: `translateY(${interpolate(s, [0, 1], [-40, 0])}px)`,
         opacity: s,
-        backgroundColor: 'rgba(255,255,255,0.96)',
-        borderRadius: 22,
-        padding: '10px 16px',
-        boxShadow: '0 8px 0 rgba(13,74,137,0.35)',
         display: 'flex',
       }}
     >
-      <Logo height={110} />
+      {/* transparent logo (no card); thin white halo keeps the blue readable on dark photos */}
+      <Logo
+        height={130}
+        style={{
+          filter:
+            'drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 10px rgba(255,255,255,0.55))',
+        }}
+      />
     </div>
   );
 };
