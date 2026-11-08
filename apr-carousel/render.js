@@ -8,7 +8,9 @@ const path = require('path');
 const ROOT = __dirname;
 const FORMATS = {
   '4x5': { w: 1080, h: 1350, dir: 'out/instagram-1080x1350' },
-  '9x16': { w: 1080, h: 1920, dir: 'out/tiktok-1080x1920' },
+  // TikTok photo posts show a 3:4 frame; the search bar covers the top ~130px and
+  // the like/comment/share buttons cover the right ~150px from mid-height down.
+  '3x4': { w: 1080, h: 1440, dir: 'out/tiktok-1080x1440' },
 };
 
 // ---------- slide content ----------
@@ -138,50 +140,53 @@ body{font-family:'Montserrat',sans-serif;color:#fff;position:relative;-webkit-fo
 
 function storySlide(s, i, n, W, H, fmt) {
   const top = s.area === 'top';
-  const band = s.band + 6 + (fmt === '9x16' ? -8 : 0);
+  const tk = fmt === '3x4';
+  const band = s.band + 6 + (tk ? 4 : 0);
   const grad = top
     ? `linear-gradient(180deg, rgba(34,73,126,.96) 0%, rgba(64,114,175,.85) ${band * 0.68}%, rgba(64,114,175,0) ${band}%)`
     : `linear-gradient(0deg, rgba(34,73,126,.96) 0%, rgba(64,114,175,.85) ${band * 0.68}%, rgba(64,114,175,0) ${band}%)`;
-  const textAlign = s.align === 'right' ? 'right' : 'left';
+  const align = tk ? 'left' : s.align;
+  const textAlign = align === 'right' ? 'right' : 'left';
   const pad = 56;
   const block = top
-    ? `top:${fmt === '9x16' ? 190 : 130}px;`
-    : `bottom:${fmt === '9x16' ? 200 : 70}px;`;
+    ? `top:${tk ? 160 : 130}px;`
+    : `bottom:${tk ? 60 : 70}px;`;
   const chromePos = top ? `bottom:${fmt === '9x16' ? 190 : 56}px` : `top:${fmt === '9x16' ? 150 : 56}px`;
   return `
-  <img class="photo" src="${fileUrl('photos/' + s.photo + '.jpg')}" style="object-position:${fmt === '9x16' ? s.pos916 : s.pos}">
+  <img class="photo" src="${fileUrl('photos/' + s.photo + '.jpg')}" style="object-position:${s.pos}">
   <div style="position:absolute;inset:0;background:${grad}"></div>
-  <div class="chrome" style="${chromePos}"><img src="${logo}"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>
-  <div style="position:absolute;left:${pad}px;right:${pad}px;${block}text-align:${textAlign}" class="shadow">
-    <div style="display:flex;justify-content:${s.align === 'right' ? 'flex-end' : 'flex-start'};align-items:center;margin-bottom:26px">
+  ${tk ? '' : `<div class="chrome" style="${chromePos}"><img src="${logo}"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>`}
+  <div style="position:absolute;left:${pad}px;right:${tk ? 170 : pad}px;${block}text-align:${textAlign}" class="shadow">
+    ${tk ? `<img src="${logo}" style="height:30px;display:block;margin-bottom:22px;filter:drop-shadow(0 2px 8px rgba(14,34,64,.6))">` : ''}
+    <div style="display:flex;justify-content:${align === 'right' ? 'flex-end' : 'flex-start'};align-items:center;margin-bottom:26px">
       <span class="tag"><span class="pin"></span>${s.place}</span><span class="prod">${s.product}</span>
     </div>
     <div class="h" style="font-size:62px">${s.headline.join('<br>')}</div>
-    <p style="font-weight:600;font-size:29px;line-height:1.42;margin-top:22px;max-width:760px;${s.align === 'right' ? 'margin-left:auto' : ''}">${s.body}</p>
+    <p style="font-weight:600;font-size:29px;line-height:1.42;margin-top:22px;max-width:760px;${align === 'right' ? 'margin-left:auto' : ''}">${s.body}</p>
   </div>`;
 }
 
 function coverSlide(s, i, n, W, H, fmt) {
-  const tall = fmt === '9x16';
+  const tall = false, tk = fmt === '3x4';
   return `
   <img class="photo" src="${fileUrl('photos/' + s.photo + '.jpg')}" style="object-position:${tall ? s.pos916 : s.pos}">
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(34,73,126,.97) 0%, rgba(64,114,175,.88) ${tall ? 22 : 24}%, rgba(64,114,175,0) ${tall ? 40 : 44}%)"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(34,73,126,.97) 0%, rgba(64,114,175,.88) ${tall ? 22 : 24}%, rgba(64,114,175,0) ${tk ? 48 : 44}%)"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(34,73,126,.92) 0%, rgba(34,73,126,0) 16%)"></div>
-  <div style="position:absolute;left:56px;right:56px;top:${tall ? 170 : 60}px" class="shadow">
+  <div style="position:absolute;left:56px;right:56px;top:${tk ? 160 : 60}px" class="shadow">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${tall ? 52 : 38}px">
-      <img src="${logo}" style="height:48px"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span>
+      <img src="${logo}" style="height:48px">${tk ? '' : `<span class="count">${String(i + 1).padStart(2, '0')}/${n}</span>`}
     </div>
     <div class="h" style="font-size:${tall ? 92 : 86}px;line-height:.98">${s.headline.join('<br>')}</div>
     <p style="font-weight:600;font-size:29px;line-height:1.42;margin-top:24px;max-width:900px">${s.body}</p>
   </div>
-  <div style="position:absolute;right:56px;bottom:${tall ? 220 : 56}px;display:flex;align-items:center;gap:18px">
+  <div style="position:absolute;${tk ? 'left' : 'right'}:56px;bottom:${tk ? 60 : 56}px;display:flex;align-items:center;gap:18px">
     <span style="font-family:'Unbounded';font-weight:800;font-size:24px;letter-spacing:.06em;text-transform:uppercase">${s.swipe}</span>
     <span style="display:inline-block;width:64px;height:64px;background:#fff;clip-path:polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)"></span>
   </div>`;
 }
 
 function productsSlide(i, n, W, H, fmt) {
-  const tall = fmt === '9x16';
+  const tall = false, tk = fmt === '3x4';
   const card = (num, title, line, points, photo, pos, size) => `
     <div style="display:flex;gap:30px;align-items:stretch;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.22);padding:26px">
       <div style="width:230px;flex:none;background:url('${fileUrl('photos/' + photo + '.jpg')}') ${pos}/${size};clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)"></div>
@@ -194,8 +199,8 @@ function productsSlide(i, n, W, H, fmt) {
     </div>`;
   return `
   <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 100% 0%, #4F84C4 0%, #4072AF 45%, #2D5A93 100%)"></div>
-  <div style="position:absolute;left:56px;right:56px;${tall ? 'top:50%;transform:translateY(-54%);zoom:1.12' : 'top:64px'}">
-    <div style="display:flex;justify-content:space-between;align-items:center"><img src="${logo}" style="height:40px"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>
+  <div style="position:absolute;left:56px;right:${tk ? 170 : 56}px;${tk ? 'top:150px' : 'top:64px'}">
+    <div style="display:flex;justify-content:space-between;align-items:center"><img src="${logo}" style="height:40px">${tk ? '' : `<span class="count">${String(i + 1).padStart(2, '0')}/${n}</span>`}</div>
     <span class="cut" style="margin:${tall ? 70 : 80}px 0 26px"></span>
     <div class="h" style="font-size:72px">Apa yang<br>kami sewa.</div>
     <p style="font-weight:600;font-size:28px;margin:18px 0 ${tall ? 54 : 38}px;opacity:.92">Dua barang yang ubah cara anda travel.</p>
@@ -207,7 +212,7 @@ function productsSlide(i, n, W, H, fmt) {
 }
 
 function serviceSlide(i, n, W, H, fmt) {
-  const tall = fmt === '9x16';
+  const tall = false, tk = fmt === '3x4';
   const loc = (name, sub) => `
     <div style="display:flex;align-items:center;gap:22px;padding:22px 0;border-top:2px solid rgba(255,255,255,.25)">
       <span style="width:22px;height:22px;flex:none;background:#fff;transform:rotate(45deg);border-radius:50% 50% 0 50%"></span>
@@ -215,8 +220,8 @@ function serviceSlide(i, n, W, H, fmt) {
     </div>`;
   return `
   <div style="position:absolute;inset:0;background:linear-gradient(160deg,#22497E 0%,#4072AF 70%)"></div>
-  <div style="position:absolute;left:56px;right:56px;${tall ? 'top:50%;transform:translateY(-54%);zoom:1.12' : 'top:64px'}">
-    <div style="display:flex;justify-content:space-between;align-items:center"><img src="${logo}" style="height:40px"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>
+  <div style="position:absolute;left:56px;right:${tk ? 170 : 56}px;${tk ? 'top:150px' : 'top:64px'}">
+    <div style="display:flex;justify-content:space-between;align-items:center"><img src="${logo}" style="height:40px">${tk ? '' : `<span class="count">${String(i + 1).padStart(2, '0')}/${n}</span>`}</div>
     <div class="h" style="font-size:${tall ? 230 : 210}px;line-height:.9;margin-top:${tall ? 80 : 90}px;letter-spacing:-0.03em">24<span style="font-size:.42em;color:#BFD6F5;letter-spacing:0;margin-left:14px">JAM</span></div>
     <div class="h" style="font-size:52px;margin-top:14px">Pukul 2 pagi pun<br>kami hantar.</div>
     <p style="font-weight:600;font-size:28px;line-height:1.45;margin:20px 0 ${tall ? 60 : 34}px;max-width:900px">Flight awal pagi atau landed tengah malam — anda bagi masa, kami datang. Pickup & return di lokasi yang sesuai dengan anda:</p>
@@ -228,13 +233,13 @@ function serviceSlide(i, n, W, H, fmt) {
 }
 
 function ctaSlide(i, n, W, H, fmt) {
-  const tall = fmt === '9x16';
+  const tall = false, tk = fmt === '3x4';
   const step = (n2, t) => `<div style="display:flex;gap:22px;align-items:center;margin-top:20px"><span style="font-family:'Unbounded';font-weight:800;font-size:28px;width:64px;height:64px;flex:none;display:grid;place-items:center;background:#fff;color:#22497E;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)">${n2}</span><span style="font-weight:700;font-size:30px">${t}</span></div>`;
   return `
   <div style="position:absolute;inset:0;background:#4072AF"></div>
   <div style="position:absolute;inset:0;background:repeating-linear-gradient(-14deg, rgba(255,255,255,0) 0 120px, rgba(255,255,255,.035) 120px 124px)"></div>
-  <div style="position:absolute;left:56px;right:56px;${tall ? 'top:50%;transform:translateY(-54%);zoom:1.12' : 'top:64px'}">
-    <div style="display:flex;justify-content:flex-end"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>
+  <div style="position:absolute;left:56px;right:${tk ? 170 : 56}px;${tk ? 'top:150px' : 'top:64px'}">
+    <div style="display:flex;justify-content:flex-end">${tk ? '' : `<span class="count">${String(i + 1).padStart(2, '0')}/${n}</span>`}</div>
     <div style="text-align:center;margin-top:${tall ? 120 : 80}px">
       <img src="${logo}" style="width:${tall ? 620 : 560}px">
     </div>
