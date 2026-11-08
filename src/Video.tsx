@@ -3,7 +3,7 @@ import {AbsoluteFill, Html5Audio, Sequence, continueRender, delayRender, staticF
 import {SCENES, sceneStarts} from './script';
 import type {Platform} from './theme';
 import {PlatformCtx, SafeZoneOverlay, Sfx} from './components/Base';
-import {ChecklistScene, CtaScene, Hook, KitchenScene, PhotoScene, TopTag} from './components/Scenes';
+import {AmenitiesScene, ChecklistScene, CtaScene, Hook, KitchenScene, LogoBadge, PhotoScene} from './components/Scenes';
 
 export type VideoProps = {platform: Platform; showSafeZone: boolean};
 
@@ -23,7 +23,7 @@ export const HomestayVideo: React.FC<VideoProps> = ({platform, showSafeZone}) =>
   useFonts();
   const starts = sceneStarts();
   const tagFrom = SCENES[0].dur;
-  const tagTo = starts[SCENES.findIndex((s) => s.type === 'checklist')];
+  const tagTo = starts[SCENES.findIndex((s) => s.type === 'amenities')];
 
   return (
     <PlatformCtx.Provider value={platform}>
@@ -33,13 +33,14 @@ export const HomestayVideo: React.FC<VideoProps> = ({platform, showSafeZone}) =>
             {scene.type === 'hook' ? <Hook img={scene.img} dur={scene.dur} /> : null}
             {scene.type === 'photo' ? <PhotoScene scene={scene} /> : null}
             {scene.type === 'kitchen' ? <KitchenScene scene={scene} /> : null}
+            {scene.type === 'amenities' ? <AmenitiesScene scene={scene} /> : null}
             {scene.type === 'checklist' ? <ChecklistScene scene={scene} /> : null}
             {scene.type === 'cta' ? <CtaScene img={scene.img} dur={scene.dur} /> : null}
           </Sequence>
         ))}
 
-        <Sequence from={tagFrom} durationInFrames={tagTo - tagFrom} name="top tag">
-          <TopTag />
+        <Sequence from={tagFrom} durationInFrames={tagTo - tagFrom} name="logo badge">
+          <LogoBadge />
         </Sequence>
 
         {/* whoosh peaks right on every cut (except into CTA, which gets the riser) */}

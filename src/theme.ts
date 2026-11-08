@@ -8,6 +8,8 @@ export const H = 1920;
 export const FPS = 30;
 
 export const COLORS = {
+  brand: '#0D4A89', // Villa Arasy logo blue — used for ALL text
+  brandSoft: '#E6EEF7',
   yellow: '#FFD23F',
   pool: '#1FB6FF',
   ink: '#0B1220',

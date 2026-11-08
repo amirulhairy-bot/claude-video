@@ -143,16 +143,17 @@ const parse = (caption: string): Chunk[] =>
             .map((w) => ({text: w, hi: false})),
     );
 
-/** Word-by-word kinetic caption, anchored just above the bottom safe line. */
+/** Word-by-word kinetic caption on a white card (brand-blue text), above the bottom safe line. */
 export const Caption: React.FC<{text: string; delay?: number; size?: number}> = ({
   text,
   delay = 4,
-  size = 74,
+  size = 66,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const safe = useSafe();
   const chunks = parse(text);
+  const card = spring({frame: frame - (delay - 3), fps, config: {damping: 14, stiffness: 180}});
   let hiAt = -1;
   return (
     <AbsoluteFill>
@@ -163,57 +164,93 @@ export const Caption: React.FC<{text: string; delay?: number; size?: number}> = 
           right: safe.right,
           bottom: safe.bottom + 40,
           display: 'flex',
-          flexWrap: 'wrap',
           justifyContent: 'center',
-          alignItems: 'center',
-          gap: '10px 18px',
-          fontFamily: FONT_BODY,
-          fontWeight: 900,
-          fontSize: size,
-          lineHeight: 1.12,
-          color: COLORS.white,
-          textAlign: 'center',
-          textShadow: '0 5px 0 rgba(0,0,0,0.45), 0 0 26px rgba(0,0,0,0.7)',
         }}
       >
-        {chunks.map((c, i) => {
-          const start = delay + i * 3;
-          if (c.hi && hiAt < 0) hiAt = start;
-          const s = spring({
-            frame: frame - start,
-            fps,
-            config: {damping: c.hi ? 9 : 14, stiffness: 180},
-          });
-          const style: React.CSSProperties = {
-            display: 'inline-block',
-            opacity: interpolate(frame - start, [0, 3], [0, 1], clamp),
-            transform: `translateY(${interpolate(s, [0, 1], [34, 0])}px) scale(${interpolate(
-              s,
-              [0, 1],
-              [c.hi ? 0.3 : 0.7, 1],
-            )})${c.hi ? ' rotate(-2deg)' : ''}`,
-          };
-          if (c.hi) {
-            Object.assign(style, {
-              backgroundColor: COLORS.yellow,
-              color: COLORS.ink,
-              padding: '4px 20px 8px',
-              borderRadius: 14,
-              textShadow: 'none',
-              boxShadow: '0 10px 0 rgba(0,0,0,0.35)',
+        <div
+          style={{
+            opacity: frame >= delay - 3 ? 1 : 0,
+            transform: `scale(${interpolate(card, [0, 1], [0.6, 1])}) rotate(-1deg)`,
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '6px 16px',
+            backgroundColor: 'rgba(255,255,255,0.96)',
+            borderRadius: 30,
+            padding: '20px 30px 24px',
+            boxShadow: '0 14px 0 rgba(13,74,137,0.35), 0 20px 50px rgba(0,0,0,0.35)',
+            fontFamily: FONT_BODY,
+            fontWeight: 900,
+            fontSize: size,
+            lineHeight: 1.12,
+            color: COLORS.brand,
+            textAlign: 'center',
+          }}
+        >
+          {chunks.map((c, i) => {
+            const start = delay + i * 3;
+            if (c.hi && hiAt < 0) hiAt = start;
+            const s = spring({
+              frame: frame - start,
+              fps,
+              config: {damping: c.hi ? 9 : 14, stiffness: 180},
             });
-          }
-          return (
-            <span key={i} style={style}>
-              {c.text}
-            </span>
-          );
-        })}
+            const style: React.CSSProperties = {
+              display: 'inline-block',
+              opacity: interpolate(frame - start, [0, 3], [0, 1], clamp),
+              transform: `translateY(${interpolate(s, [0, 1], [24, 0])}px) scale(${interpolate(
+                s,
+                [0, 1],
+                [c.hi ? 0.3 : 0.7, 1],
+              )})${c.hi ? ' rotate(-2deg)' : ''}`,
+            };
+            if (c.hi) {
+              Object.assign(style, {
+                backgroundColor: COLORS.yellow,
+                padding: '2px 16px 6px',
+                borderRadius: 12,
+              });
+            }
+            return (
+              <span key={i} style={style}>
+                {c.text}
+              </span>
+            );
+          })}
+        </div>
       </div>
       {hiAt >= 0 ? <Sfx src="pop.wav" at={hiAt} volume={0.7} /> : null}
     </AbsoluteFill>
   );
 };
+
+/** White "label" slab with brand-blue display text — used for every headline. */
+export const Slab: React.FC<{
+  children: React.ReactNode;
+  size: number;
+  bg?: string;
+  rotate?: number;
+  style?: React.CSSProperties;
+}> = ({children, size, bg = COLORS.white, rotate = 0, style}) => (
+  <div
+    style={{
+      display: 'inline-block',
+      backgroundColor: bg,
+      color: COLORS.brand,
+      fontFamily: 'Anton, Impact, sans-serif',
+      fontSize: size,
+      lineHeight: 1.05,
+      padding: `${size * 0.06}px ${size * 0.22}px ${size * 0.1}px`,
+      borderRadius: size * 0.14,
+      boxShadow: '0 12px 0 rgba(13,74,137,0.4), 0 18px 40px rgba(0,0,0,0.35)',
+      transform: `rotate(${rotate}deg)`,
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+);
 
 /** Red bands showing where TikTok / Reels UI covers the frame (Studio only). */
 export const SafeZoneOverlay: React.FC = () => {

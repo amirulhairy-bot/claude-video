@@ -2,6 +2,16 @@
 // Durations are multiples of 15 frames (= one beat at 120 BPM / 30 fps),
 // so every cut lands on the music beat.
 
+export type AmenityIcon =
+  | 'aircond'
+  | 'toilet'
+  | 'wifi'
+  | 'tv'
+  | 'water'
+  | 'microwave'
+  | 'oven'
+  | 'playground';
+
 export type Enter = 'none' | 'zoom' | 'slide' | 'flash' | 'whip';
 
 export type Scene =
@@ -29,6 +39,13 @@ export type Scene =
       chips: string[];
     }
   | {
+      type: 'amenities';
+      img: string;
+      dur: number;
+      title: string;
+      items: {icon: AmenityIcon; label: string; sub?: string}[];
+    }
+  | {
       type: 'checklist';
       img: string;
       dur: number;
@@ -42,15 +59,23 @@ export type Scene =
     };
 
 export const SCENES: Scene[] = [
-  {type: 'hook', img: 'images/01.jpg', dur: 90},
+  {type: 'hook', img: 'images/17.jpg', dur: 90},
   {
     type: 'photo',
     img: 'images/05.jpg',
     dur: 75,
     orientation: 'portrait',
     enter: 'zoom',
-    caption: 'Homestay ni siap ada *PRIVATE POOL* sendiri',
+    caption: 'Siap ada *PRIVATE POOL* sendiri',
     sticker: 'privatePool',
+  },
+  {
+    type: 'photo',
+    img: 'images/01.jpg',
+    dur: 60,
+    orientation: 'portrait',
+    enter: 'whip',
+    caption: 'Lengkap dengan *AIR TERJUN* mini',
   },
   {
     type: 'photo',
@@ -128,14 +153,30 @@ export const SCENES: Scene[] = [
     imgs: ['images/13.jpg', 'images/15.jpg', 'images/16.jpg'],
     dur: 90,
     caption: 'Dapur *LENGKAP* tinggal masak je',
-    chips: ['Oven', 'Microwave', 'Peti sejuk', 'Penapis air'],
+    chips: ['Oven', 'Microwave', 'Peti sejuk', 'Penapis air Coway'],
+  },
+  {
+    type: 'amenities',
+    img: 'images/09.jpg',
+    dur: 120,
+    title: 'KEMUDAHAN',
+    items: [
+      {icon: 'aircond', label: '6 Aircond'},
+      {icon: 'toilet', label: '4 Toilet'},
+      {icon: 'wifi', label: 'WiFi'},
+      {icon: 'tv', label: 'Astro'},
+      {icon: 'water', label: 'Coway', sub: 'penapis air'},
+      {icon: 'microwave', label: 'Microwave'},
+      {icon: 'oven', label: 'Oven'},
+      {icon: 'playground', label: 'Playground', sub: 'depan rumah'},
+    ],
   },
   {
     type: 'checklist',
     img: 'images/05.jpg',
     dur: 90,
     title: 'SEMUA DALAM\nSATU RUMAH',
-    items: ['Private pool', 'Gazebo & taman', 'Dapur lengkap', 'Ruang tamu luas'],
+    items: ['Private pool', 'Mesin arcade', 'Gazebo & taman', 'Playground depan rumah', 'Dapur lengkap'],
   },
   {type: 'cta', img: 'images/04.jpg', dur: 90},
 ];

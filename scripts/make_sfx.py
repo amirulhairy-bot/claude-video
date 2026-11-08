@@ -138,7 +138,7 @@ save("shutter.wav", shutter())
 # ---------- music bed: 120 BPM chill house loop, Am - F - C - G ----------
 BPM = 120
 beat = 60 / BPM
-total = 32.0
+total = 37.5  # = video length (1125 frames @ 30 fps)
 N = int(SR * total)
 mix = np.zeros(N)
 
