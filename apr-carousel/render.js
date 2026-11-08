@@ -104,7 +104,7 @@ const slides = [
   {
     photo: '01', pos: '50% 80%', pos916: '50% 80%', area: 'top', align: 'left', band: 32,
     place: 'Melbourne → KLIA', product: 'Return Airwheel',
-    headline: ['Mendarat.', 'Return. <em>Balik.</em>'],
+    headline: ['Landed.', 'Return. <em>Balik.</em>'],
     body: 'Lepas 8 jam flight, tak payah singgah mana-mana. Return terus di airport, naik Grab, balik tidur.',
   },
   { type: 'products' },
@@ -219,8 +219,8 @@ function serviceSlide(i, n, W, H, fmt) {
     <div style="display:flex;justify-content:space-between;align-items:center"><img src="${logo}" style="height:40px"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>
     <div class="h" style="font-size:${tall ? 230 : 210}px;line-height:.9;margin-top:${tall ? 80 : 90}px;letter-spacing:-0.03em">24<span style="font-size:.42em;color:#BFD6F5;letter-spacing:0;margin-left:14px">JAM</span></div>
     <div class="h" style="font-size:52px;margin-top:14px">Pukul 2 pagi pun<br>kami hantar.</div>
-    <p style="font-weight:600;font-size:28px;line-height:1.45;margin:20px 0 ${tall ? 60 : 34}px;max-width:900px">Flight awal pagi atau mendarat tengah malam — anda bagi masa, kami datang. Pickup & return di lokasi yang sesuai dengan anda:</p>
-    ${loc('KLIA Terminal 1', 'Pickup sebelum check-in, return lepas mendarat')}
+    <p style="font-weight:600;font-size:28px;line-height:1.45;margin:20px 0 ${tall ? 60 : 34}px;max-width:900px">Flight awal pagi atau landed tengah malam — anda bagi masa, kami datang. Pickup & return di lokasi yang sesuai dengan anda:</p>
+    ${loc('KLIA Terminal 1', 'Pickup sebelum check-in, return lepas landed')}
     ${loc('KLIA Terminal 2', 'Jumpa terus di pintu masuk Level 3')}
     ${loc('Mitsui Outlet Park', 'Dekat KLIA — senang singgah')}
     ${loc('Kota Warisan', 'Untuk yang tinggal sekitar Sepang')}
@@ -235,17 +235,18 @@ function ctaSlide(i, n, W, H, fmt) {
   <div style="position:absolute;inset:0;background:repeating-linear-gradient(-14deg, rgba(255,255,255,0) 0 120px, rgba(255,255,255,.035) 120px 124px)"></div>
   <div style="position:absolute;left:56px;right:56px;${tall ? 'top:50%;transform:translateY(-54%);zoom:1.12' : 'top:64px'}">
     <div style="display:flex;justify-content:flex-end"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>
-    <div style="text-align:center;margin-top:${tall ? 120 : 90}px">
+    <div style="text-align:center;margin-top:${tall ? 120 : 80}px">
       <img src="${logo}" style="width:${tall ? 620 : 560}px">
     </div>
-    <div class="h" style="font-size:64px;text-align:center;margin-top:${tall ? 90 : 70}px">Destinasi seterusnya<br><em>giliran anda.</em></div>
+    <div class="h" style="font-size:64px;text-align:center;margin-top:${tall ? 90 : 60}px">Destinasi seterusnya<br><em>giliran anda.</em></div>
     <div style="margin:${tall ? 60 : 36}px auto 0;width:max-content">
       ${step('1', 'DM kami tarikh & destinasi')}
       ${step('2', 'Pilih Airwheel / Pocket 3')}
       ${step('3', 'Pickup di airport — terus fly')}
     </div>
     <div style="margin:${tall ? 80 : 46}px auto 0;width:max-content;background:#fff;color:#22497E;font-family:'Unbounded';font-weight:800;font-size:34px;letter-spacing:.04em;text-transform:uppercase;padding:26px 46px;clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)">DM “APR” sekarang</div>
-    <p style="text-align:center;font-weight:600;font-size:24px;margin-top:22px;opacity:.9">Slot musim cuti cepat habis — tempah awal.</p>
+    <div style="text-align:center;margin-top:${tall ? 40 : 30}px"><div style="font-weight:700;font-size:22px;letter-spacing:.18em;text-transform:uppercase;opacity:.85">WhatsApp / Call</div><div class="h" style="font-size:58px;margin-top:8px;letter-spacing:.01em">019-336 0313</div></div>
+    <p style="text-align:center;font-weight:600;font-size:24px;margin-top:18px;opacity:.9">Slot musim cuti cepat habis — tempah awal.</p>
   </div>`;
 }
 
