@@ -1,0 +1,24 @@
+{
+  "name": "claude-video",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "sfx": "python3 scripts/make_sfx.py",
+    "render:tiktok": "remotion render HomestayTikTok out/homestay-tiktok.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell",
+    "render:reels": "remotion render HomestayReels out/homestay-reels.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell",
+    "finalize": "bash scripts/finalize.sh",
+    "build": "npm run sfx && npm run render:tiktok && npm run render:reels && npm run finalize"
+  },
+  "dependencies": {
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/montserrat": "^5.3.0",
+    "@remotion/cli": "^4.0.541",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.541"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}
