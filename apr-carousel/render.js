@@ -19,7 +19,7 @@ const FORMATS = {
 // band: how far the brand-blue fade reaches into the photo (% of height)
 const slides = [
   {
-    type: 'cover', photo: '14', pos: '50% 60%', pos916: '50% 60%',
+    type: 'cover', show: [0.28, 1.0], photo: '14', pos: '50% 60%', pos916: '50% 60%',
     kicker: 'AMSYAR PACK RENTAL',
     headline: ['Beg yang', 'angkut <em>anda.</em>'],
     body: 'Customer kami dah sampai Osaka, Bali, Istanbul sampai ke Madinah — tanpa heret beg, tanpa kamera berat.',
@@ -74,7 +74,7 @@ const slides = [
     body: 'Kaki kecil tak penat jalan terminal. Si kecil naik Airwheel, mak ayah senyum je.',
   },
   {
-    photo: '10', pos: '50% 60%', pos916: '50% 60%', area: 'top', align: 'left', band: 34,
+    show: [0.35, 0.99], photo: '10', pos: '50% 60%', pos916: '50% 60%', area: 'top', align: 'left', band: 34,
     place: 'Taipei, Taiwan', product: 'DJI Osmo Pocket 3',
     headline: ['Cuti akhir', 'tahun, 4K.'],
     body: 'Night market Shilin, Jiufen berkabus — semua masuk dalam satu Pocket 3.',
@@ -86,25 +86,25 @@ const slides = [
     body: 'Rupanya dia yang paling seronok satu family. Airwheel tu tak lepas dari tangan.',
   },
   {
-    photo: '12', pos: '50% 60%', pos916: '50% 60%', area: 'top', align: 'left', band: 32,
+    show: [0.28, 0.99], photo: '12', pos: '50% 60%', pos916: '50% 60%', area: 'top', align: 'left', band: 32,
     place: 'Ho Chi Minh, Vietnam', product: 'DJI Osmo Pocket 3',
     headline: ['Business trip,', 'content jalan.'],
     body: 'Meeting siang, buat content malam. Pocket 3 muat dalam poket seluar.',
   },
   {
-    photo: '13', pos: '50% 70%', pos916: '50% 70%', area: 'top', align: 'left', band: 34,
+    show: [0.31, 0.97], photo: '13', pos: '50% 70%', pos916: '50% 70%', area: 'top', align: 'left', band: 34,
     place: 'Zurich, Switzerland', product: 'DJI Osmo Pocket 3',
     headline: ['Alps Swiss,', 'tanpa beban.'],
     body: 'Hiking ringan, kamera lagi ringan. Pemandangan Alps terus jadi sinematik.',
   },
   {
-    photo: '15', pos: '50% 70%', pos916: '50% 70%', area: 'top', align: 'left', band: 34,
+    show: [0.35, 1.0], photo: '15', pos: '50% 70%', pos916: '50% 70%', area: 'top', align: 'left', band: 34,
     place: 'Madinah, Saudi', product: 'DJI Osmo Pocket 3',
     headline: ['Kenangan', 'Tanah Suci.'],
     body: 'Umrah bersama keluarga. Pocket 3 ringan & senyap — simpan detik berharga tanpa menyusahkan.',
   },
   {
-    photo: '01', pos: '50% 80%', pos916: '50% 80%', area: 'top', align: 'left', band: 32,
+    show: [0.27, 1.0], photo: '01', pos: '50% 80%', pos916: '50% 80%', area: 'top', align: 'left', band: 32,
     place: 'Melbourne → KLIA', product: 'Return Airwheel',
     headline: ['Landed.', 'Return. <em>Balik.</em>'],
     body: 'Lepas 8 jam flight, tak payah singgah mana-mana. Return terus di airport, naik Grab, balik tidur.',
@@ -126,17 +126,28 @@ ${css}
 html,body{width:${W}px;height:${H}px;overflow:hidden;background:var(--blue)}
 body{font-family:'Montserrat',sans-serif;color:#fff;position:relative;-webkit-font-smoothing:antialiased}
 .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.h{font-family:'Unbounded',sans-serif;font-weight:800;text-transform:uppercase;line-height:1.02;letter-spacing:-0.01em}
+.h{font-family:'Montserrat',sans-serif;font-weight:900;text-transform:uppercase;line-height:1.0;letter-spacing:0}
 .h em{font-style:normal;color:#BFD6F5}
 .chrome{position:absolute;left:56px;right:56px;display:flex;align-items:center;justify-content:space-between;z-index:5}
 .chrome img{height:34px;filter:drop-shadow(0 2px 8px rgba(14,34,64,.6))}
-.count{font-family:'Unbounded';font-weight:600;font-size:22px;letter-spacing:.08em;padding:9px 16px;background:rgba(14,34,64,.35);border-radius:4px}
+.count{font-family:'Montserrat';font-weight:800;font-size:22px;letter-spacing:.08em;padding:9px 16px;background:rgba(14,34,64,.35);border-radius:4px}
 .tag{display:inline-flex;align-items:center;gap:12px;background:#fff;color:var(--deep);font-weight:800;font-size:24px;letter-spacing:.12em;text-transform:uppercase;padding:12px 22px 12px 18px;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%)}
 .pin{width:14px;height:14px;background:var(--blue);transform:rotate(45deg);border-radius:50% 50% 0 50%}
 .prod{display:inline-block;margin-left:12px;font-weight:700;font-size:21px;letter-spacing:.14em;text-transform:uppercase;padding:12px 18px;border:2px solid rgba(255,255,255,.85)}
 .cut{display:block;height:10px;width:120px;background:#fff;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
-.shadow{text-shadow:0 2px 18px rgba(14,34,64,.45)}
+.shadow{text-shadow:0 1px 3px rgba(14,34,64,.35)}
 `;
+
+// Photo is placed BELOW the text block so no face is ever covered: the band
+// show=[y0,y1] of the photo (head-top .. feet/product) is scaled to fit the space
+// under the text; leftover sides are filled with a blurred copy of the same photo.
+function fitLayers(src, show) {
+  return `
+  <img class="photo" src="${src}" style="filter:blur(36px) brightness(.8);transform:scale(1.15)">
+  <div style="position:absolute;inset:0;background:rgba(34,73,126,.55)"></div>
+  <img id="fg" data-show="${show.join(',')}" src="${src}" style="position:absolute;box-shadow:0 0 60px rgba(14,34,64,.45)">
+  <div id="fade" style="position:absolute;left:0;right:0;top:0"></div>`;
+}
 
 function storySlide(s, i, n, W, H, fmt) {
   const top = s.area === 'top';
@@ -152,16 +163,18 @@ function storySlide(s, i, n, W, H, fmt) {
     ? `top:${tk ? 160 : 130}px;`
     : `bottom:${tk ? 60 : 70}px;`;
   const chromePos = top ? `bottom:${fmt === '9x16' ? 190 : 56}px` : `top:${fmt === '9x16' ? 150 : 56}px`;
+  const src = fileUrl('photos/' + s.photo + '.jpg');
+  const bg = s.show ? fitLayers(src, s.show) : `<img class="photo" src="${src}" style="object-position:${s.pos}">
+  <div style="position:absolute;inset:0;background:${grad}"></div>`;
   return `
-  <img class="photo" src="${fileUrl('photos/' + s.photo + '.jpg')}" style="object-position:${s.pos}">
-  <div style="position:absolute;inset:0;background:${grad}"></div>
+  ${bg}
   ${tk ? '' : `<div class="chrome" style="${chromePos}"><img src="${logo}"><span class="count">${String(i + 1).padStart(2, '0')}/${n}</span></div>`}
-  <div style="position:absolute;left:${pad}px;right:${tk ? 170 : pad}px;${block}text-align:${textAlign}" class="shadow">
+  <div id="txt" style="position:absolute;left:${pad}px;right:${tk ? 170 : pad}px;${block}text-align:${textAlign}" class="shadow">
     ${tk ? `<img src="${logo}" style="height:30px;display:block;margin-bottom:22px;filter:drop-shadow(0 2px 8px rgba(14,34,64,.6))">` : ''}
     <div style="display:flex;justify-content:${align === 'right' ? 'flex-end' : 'flex-start'};align-items:center;margin-bottom:26px">
       <span class="tag"><span class="pin"></span>${s.place}</span><span class="prod">${s.product}</span>
     </div>
-    <div class="h" style="font-size:62px">${s.headline.join('<br>')}</div>
+    <div class="h" style="font-size:68px">${s.headline.join('<br>')}</div>
     <p style="font-weight:600;font-size:29px;line-height:1.42;margin-top:22px;max-width:760px;${align === 'right' ? 'margin-left:auto' : ''}">${s.body}</p>
   </div>`;
 }
@@ -169,20 +182,20 @@ function storySlide(s, i, n, W, H, fmt) {
 function coverSlide(s, i, n, W, H, fmt) {
   const tall = false, tk = fmt === '3x4';
   return `
-  <img class="photo" src="${fileUrl('photos/' + s.photo + '.jpg')}" style="object-position:${tall ? s.pos916 : s.pos}">
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(34,73,126,.97) 0%, rgba(64,114,175,.88) ${tall ? 22 : 24}%, rgba(64,114,175,0) ${tk ? 48 : 44}%)"></div>
+  ${fitLayers(fileUrl('photos/' + s.photo + '.jpg'), s.show)}
   <div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(34,73,126,.92) 0%, rgba(34,73,126,0) 16%)"></div>
-  <div style="position:absolute;left:56px;right:56px;top:${tk ? 160 : 60}px" class="shadow">
+  <div id="txt" style="position:absolute;left:56px;right:56px;top:${tk ? 160 : 60}px" class="shadow">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${tall ? 52 : 38}px">
       <img src="${logo}" style="height:48px">${tk ? '' : `<span class="count">${String(i + 1).padStart(2, '0')}/${n}</span>`}
     </div>
-    <div class="h" style="font-size:${tall ? 92 : 86}px;line-height:.98">${s.headline.join('<br>')}</div>
+    <div class="h" style="font-size:96px;line-height:.98">${s.headline.join('<br>')}</div>
     <p style="font-weight:600;font-size:29px;line-height:1.42;margin-top:24px;max-width:900px">${s.body}</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:22px">
+      <span style="font-family:'Montserrat';font-weight:900;font-size:22px;letter-spacing:.08em;text-transform:uppercase;color:#BFD6F5">${s.swipe}</span>
+      <span style="display:inline-block;width:30px;height:30px;background:#BFD6F5;clip-path:polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)"></span>
+    </div>
   </div>
-  <div style="position:absolute;${tk ? 'left' : 'right'}:56px;bottom:${tk ? 60 : 56}px;display:flex;align-items:center;gap:18px">
-    <span style="font-family:'Unbounded';font-weight:800;font-size:24px;letter-spacing:.06em;text-transform:uppercase">${s.swipe}</span>
-    <span style="display:inline-block;width:64px;height:64px;background:#fff;clip-path:polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)"></span>
-  </div>`;
+`;
 }
 
 function productsSlide(i, n, W, H, fmt) {
@@ -191,7 +204,7 @@ function productsSlide(i, n, W, H, fmt) {
     <div style="display:flex;gap:30px;align-items:stretch;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.22);padding:26px">
       <div style="width:230px;flex:none;background:url('${fileUrl('photos/' + photo + '.jpg')}') ${pos}/${size};clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)"></div>
       <div>
-        <div style="font-family:'Unbounded';font-weight:600;font-size:20px;letter-spacing:.14em;opacity:.75">${num}</div>
+        <div style="font-family:'Montserrat';font-weight:800;font-size:20px;letter-spacing:.14em;opacity:.75">${num}</div>
         <div class="h" style="font-size:44px;margin:8px 0 10px">${title}</div>
         <div style="font-weight:700;font-size:25px;color:#BFD6F5;margin-bottom:14px">${line}</div>
         ${points.map((p) => `<div style="font-weight:600;font-size:24px;line-height:1.5;display:flex;gap:12px;align-items:baseline"><span style="width:12px;height:12px;flex:none;background:#fff;transform:skewX(-18deg)"></span>${p}</div>`).join('')}
@@ -234,7 +247,7 @@ function serviceSlide(i, n, W, H, fmt) {
 
 function ctaSlide(i, n, W, H, fmt) {
   const tall = false, tk = fmt === '3x4';
-  const step = (n2, t) => `<div style="display:flex;gap:22px;align-items:center;margin-top:20px"><span style="font-family:'Unbounded';font-weight:800;font-size:28px;width:64px;height:64px;flex:none;display:grid;place-items:center;background:#fff;color:#22497E;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)">${n2}</span><span style="font-weight:700;font-size:30px">${t}</span></div>`;
+  const step = (n2, t) => `<div style="display:flex;gap:22px;align-items:center;margin-top:20px"><span style="font-family:'Montserrat';font-weight:900;font-size:28px;width:64px;height:64px;flex:none;display:grid;place-items:center;background:#fff;color:#22497E;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)">${n2}</span><span style="font-weight:700;font-size:30px">${t}</span></div>`;
   return `
   <div style="position:absolute;inset:0;background:#4072AF"></div>
   <div style="position:absolute;inset:0;background:repeating-linear-gradient(-14deg, rgba(255,255,255,0) 0 120px, rgba(255,255,255,.035) 120px 124px)"></div>
@@ -249,7 +262,7 @@ function ctaSlide(i, n, W, H, fmt) {
       ${step('2', 'Pilih Airwheel / Pocket 3')}
       ${step('3', 'Pickup di airport — terus fly')}
     </div>
-    <div style="margin:${tall ? 80 : 46}px auto 0;width:max-content;background:#fff;color:#22497E;font-family:'Unbounded';font-weight:800;font-size:34px;letter-spacing:.04em;text-transform:uppercase;padding:26px 46px;clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)">DM “APR” sekarang</div>
+    <div style="margin:${tall ? 80 : 46}px auto 0;width:max-content;background:#fff;color:#22497E;font-family:'Montserrat';font-weight:900;font-size:34px;letter-spacing:.04em;text-transform:uppercase;padding:26px 46px;clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%)">DM “APR” sekarang</div>
     <div style="text-align:center;margin-top:${tall ? 40 : 30}px"><div style="font-weight:700;font-size:22px;letter-spacing:.18em;text-transform:uppercase;opacity:.85">WhatsApp / Call</div><div class="h" style="font-size:58px;margin-top:8px;letter-spacing:.01em">019-336 0313</div></div>
     <p style="text-align:center;font-weight:600;font-size:24px;margin-top:18px;opacity:.9">Slot musim cuti cepat habis — tempah awal.</p>
   </div>`;
@@ -281,7 +294,18 @@ function html(s, i, n, fmt) {
       await page.goto('file://' + file);
       await page.evaluate(() => document.fonts.ready);
       await page.waitForLoadState('networkidle');
-      await page.screenshot({ path: path.join(ROOT, dir, `APR-${String(i + 1).padStart(2, '0')}.jpg`), type: 'jpeg', quality: 92 });
+      await page.evaluate(([W, H]) => {
+        const img = document.getElementById('fg');
+        if (!img) return;
+        const [y0, y1] = img.dataset.show.split(',').map(Number);
+        const T = Math.round(document.getElementById('txt').getBoundingClientRect().bottom + 36);
+        const h = (H - T) / (y1 - y0), w = h * img.naturalWidth / img.naturalHeight;
+        Object.assign(img.style, { width: w + 'px', height: h + 'px', left: (W - w) / 2 + 'px', top: T - y0 * h + 'px' });
+        const f = document.getElementById('fade');
+        f.style.height = T + 'px';
+        f.style.background = 'linear-gradient(180deg, #22497E 0%, #4072AF ' + (T - 90) + 'px, rgba(64,114,175,0) ' + T + 'px)';
+      }, [w, h]);
+      await page.screenshot({ path: path.join(ROOT, dir, `APR-${String(i + 1).padStart(2, '0')}.png`), type: 'png' });
     }
     await page.close();
   }

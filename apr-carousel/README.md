@@ -7,4 +7,4 @@
 - `CAPTION.md`: caption + hashtag
 
 Ubah teks/kedudukan dalam `render.js` (array `slides`), kemudian jalankan `node render.js`.
-Font: Unbounded (headline, padan logo) + Montserrat (subtitle logo). Warna: #4072AF (dari logo).
+Font: Montserrat sahaja (font sama dengan "AMSYAR PACK RENTAL" pada logo), tajuk weight 900. Warna: #4072AF (dari logo).
