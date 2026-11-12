@@ -139,7 +139,7 @@ def hero():
     b.append(text(px, y, "CADANGAN REKA BENTUK LANYARD", 16, 700, "#76963A", ls=2))
     b.append(text(px, y + 46, "Lanyard Jemaah Azzuha", 36, 800))
     b.append(f'<rect x="{px}" y="{y+70}" width="70" height="4" fill="{P["peach"]}"/>')
-    rows = [("Corak", "Bunga klasik hijau zaitun (ikut rujukan)"),
+    rows = [("Corak", "Bunga klasik gaya chintz, hijau zaitun"),
             ("Bendera", "Jalur Gemilang di paras kolar, kedua-dua tali"),
             ("Logo", "Logo Azzuha betul-betul di bawah bendera"),
             ("Saiz", "25mm (lebar) × 1000mm (panjang)"),

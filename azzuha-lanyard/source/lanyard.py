@@ -9,7 +9,7 @@ W_STRIP, H = 1000.0, 25.0
 HALF = 500.0
 TILE = 80.0                         # pattern repeat along the strand
 
-P = dict(bg="#74833A", bg_dark="#5F6D2C",
+P = dict(bg="#788340", bg_dark="#636E2E",
          navy="#2B3463", navy2="#4A5C8F", white="#F4EFE0", white_s="#7F98BA", yellow="#E9CB8E",
          blue="#A8C0DD", blue_s="#6F8CB5", peach="#EDB48C", peach_d="#C9835C", peach_l="#F3CFA8",
          cream="#E6DCB4", panel="#FBF7EC", leather="#7E9435")
@@ -60,6 +60,17 @@ def defs(ns=""):
                f'<path d="M0,0 C-1.2,-0.6 -2.6,-1.2 -2.8,-2.9 C-1.4,-2.4 -0.6,-1.4 0,0Z" fill="{p["peach"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
                f'<path d="M0,0 C1.2,-0.6 2.6,-1.2 2.8,-2.9 C1.4,-2.4 0.6,-1.4 0,0Z" fill="{p["peach"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
                f'<path d="M0,0.1 L0,1.6" stroke="{p["cream"]}" stroke-width="0.25"/>'),
+        # chintz-style acanthus spray: curled multi-lobed peach leaf with darker vein
+        "ac": (f'<path d="M0,0 C0.6,-1.4 0.2,-3.0 -0.8,-4.2 C-0.2,-3.9 0.6,-3.6 0.9,-3.0 C1.1,-3.8 1.8,-4.4 2.6,-4.6 '
+               f'C2.0,-3.8 1.9,-3.1 2.1,-2.4 C2.7,-2.9 3.5,-3.0 4.2,-2.8 C3.2,-2.0 2.2,-1.0 1.4,-0.2 C1.0,0.2 0.4,0.3 0,0Z" '
+               f'fill="{p["peach"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
+               f'<path d="M0.2,-0.2 C0.9,-1.2 1.3,-2.2 1.2,-3.2 M0.6,-0.6 C1.6,-1.2 2.4,-1.8 3.2,-2.4" fill="none" stroke="{p["peach_d"]}" stroke-width="0.14"/>'),
+        # tulip bud
+        "tu": (f'<path d="M0,0 C-1.1,-0.6 -1.3,-2.2 -0.6,-3.2 C-0.3,-2.5 0,-2.4 0,-3.4 C0,-2.4 0.3,-2.5 0.6,-3.2 C1.3,-2.2 1.1,-0.6 0,0Z" '
+               f'fill="{p["peach_l"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
+               f'<path d="M0,0 C-0.9,0.1 -1.6,-0.5 -1.9,-1.3 M0,0 C0.9,0.1 1.6,-0.5 1.9,-1.3" fill="none" stroke="{p["navy"]}" stroke-width="0.18"/>'),
+        # 5-petal navy blossom with peach heart
+        "f5": flower(5, 2.0, 1.2, p["navy"]) + f'<circle r="0.75" fill="{p["peach"]}"/><circle r="0.3" fill="{p["navy"]}"/>',
         "lN": leaf(2.6, 0.32, p["navy"]),
         "lB": leaf(2.3, 0.3, p["blue"], p["blue_s"]),
         "lP": leaf(2.4, 0.34, p["peach"], p["peach_d"]),
@@ -84,17 +95,17 @@ def tile(ns="", seed=11):
     while tries < 6000:
         tries += 1
         u, v = rnd.uniform(U0, U1), rnd.uniform(0, TILE)
-        if all(math.hypot(u - pu, vd(v, pv)) > 4.6 for pu, pv, _, _ in major):
-            major.append((u, v, rnd.choices(["fW", "fN", "fB", "fP"], [5, 2, 4, 1])[0], rnd.uniform(0.68, 0.95)))
+        if all(math.hypot(u - pu, vd(v, pv)) > 3.9 for pu, pv, _, _ in major):
+            major.append((u, v, rnd.choices(["fW", "f5", "fB", "ac", "fN"], [5, 2, 3, 5, 1])[0], rnd.uniform(0.6, 0.85)))
     minor = []
     tries = 0
     while tries < 8000:
         tries += 1
         u, v = rnd.uniform(U0, U1), rnd.uniform(0, TILE)
-        if all(math.hypot(u - pu, vd(v, pv)) > 3.0 for pu, pv, _, _ in major) and \
-           all(math.hypot(u - pu, vd(v, pv)) > 2.4 for pu, pv, _, _, _ in minor):
-            minor.append((u, v, rnd.choices(["sp", "lN", "lB", "lP", "lC", "st", "fB", "dt", "lD"],
-                                            [4, 2, 3, 3, 2, 2, 2, 1, 2])[0], rnd.uniform(0, 360), rnd.uniform(0.7, 1.0)))
+        if all(math.hypot(u - pu, vd(v, pv)) > 2.6 for pu, pv, _, _ in major) and \
+           all(math.hypot(u - pu, vd(v, pv)) > 2.0 for pu, pv, _, _, _ in minor):
+            minor.append((u, v, rnd.choices(["ac", "tu", "lN", "lB", "lP", "fB", "dt", "lD", "sp"],
+                                            [4, 3, 2, 3, 3, 2, 1, 1, 2])[0], rnd.uniform(0, 360), rnd.uniform(0.5, 0.75)))
     # stems
     stems = []
     for u, v, _, _ in major:
@@ -105,13 +116,13 @@ def tile(ns="", seed=11):
             r = rnd.uniform(0.6, 1.1)
             stems.append(f'M{u:.2f},{v:.2f} Q{cu:.2f},{cv:.2f} {eu:.2f},{ev:.2f} q{r:.2f},{-r:.2f} {r*1.6:.2f},{r*0.2:.2f}')
     stems_b = []
-    for u, v, _, _ in major[::3]:
+    for u, v, _, _ in major[::2]:
         a = rnd.uniform(0, 2 * math.pi); L = rnd.uniform(3, 5)
         stems_b.append(f'M{u:.2f},{v:.2f} q{L*math.cos(a+0.6):.2f},{L*math.sin(a+0.6):.2f} {L*math.cos(a):.2f},{L*math.sin(a):.2f}')
 
     def body():
-        s = [f'<path d="{" ".join(stems)}" fill="none" stroke="{P["cream"]}" stroke-width="0.3" stroke-linecap="round"/>',
-             f'<path d="{" ".join(stems_b)}" fill="none" stroke="{P["blue_s"]}" stroke-width="0.25" stroke-linecap="round"/>']
+        s = [f'<path d="{" ".join(stems)}" fill="none" stroke="{P["blue_s"]}" stroke-width="0.2" stroke-linecap="round"/>',
+             f'<path d="{" ".join(stems_b)}" fill="none" stroke="{P["navy"]}" stroke-width="0.18" stroke-linecap="round"/>']
         s += [f'<use href="#{ns}{k}" transform="translate({u:.2f},{v:.2f}) rotate({a:.0f}) scale({sc:.2f})"/>' for u, v, k, a, sc in minor]
         s += [f'<use href="#{ns}{k}" transform="translate({u:.2f},{v:.2f}) rotate({rnd2:.0f}) scale({sc:.2f})"/>'
               for (u, v, k, sc), rnd2 in zip(major, [((i * 37) % 72) for i in range(len(major))])]
