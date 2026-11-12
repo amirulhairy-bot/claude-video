@@ -274,6 +274,77 @@ def artwork(side, bleed=2.0):
     return svg, w, h
 
 
+def tab_sheet():
+    """Leather tab spec page, A4 landscape (mm). Tab frame: x 0..27, y 0..38."""
+    W_, H_ = 297, 210
+    TW, TL, INS, STI = 27.0, 38.0, 30.0, 1.8
+    cyl = TL * 0.42
+    ltop = cyl - MARK_H / 2
+    b = [FX_DEFS, f'<rect width="{W_}" height="{H_}" fill="#fff"/>']
+    b.append(T(W_/2, 16, "TAB KULIT (LEATHER TAB) — UKURAN", 8, 700, "#222", "middle"))
+    b.append(T(W_/2, 23, "2 unit setiap lanyard (satu di setiap hujung tali)  •  Lukisan dibesarkan ×2.6 & saiz sebenar 1:1", 3.6, 400, "#666", "middle"))
+
+    def tab(ox, oy, k):
+        return (f'<g transform="translate({ox},{oy}) scale({k})"><g transform="translate(1,-468)">{leather_tab()}'
+                f'<g transform="translate(12.5,507.5)"><rect x="-4" y="-1.8" width="8" height="3.2" rx="1" fill="url(#gold)"/>'
+                f'<ellipse cx="0" cy="4.6" rx="3" ry="3.6" fill="none" stroke="url(#gold)" stroke-width="1.1"/></g></g></g>')
+    k = 2.6
+    ox, oy = 40, 48
+    X = lambda x: ox + x * k
+    Y = lambda y: oy + y * k
+    b.append(tab(ox, oy, k))
+    b.append(f'<rect x="{X(1)}" y="{Y(2)}" width="{25*k}" height="{INS*k}" fill="none" stroke="#c0392b" stroke-width="0.3" stroke-dasharray="1.5 1"/>')
+    c = "#3fa7c9"
+    lx0, lx1 = 13.5 - MARK_W/2, 13.5 + MARK_W/2
+    # top: overall width + logo width (with extension lines)
+    b.append(dim_h(X(0), X(TW), Y(0) - 14, f"{TW:.0f}mm", c, 3.2))
+    b.append(f'<path d="M{X(lx0)},{Y(ltop)} V{Y(0)-7} M{X(lx1)},{Y(ltop)} V{Y(0)-7}" stroke="#76963A" stroke-width="0.2" stroke-dasharray="0.8 0.6"/>')
+    b.append(dim_h(X(lx0), X(lx1), Y(0) - 5, f"Logo {MARK_W:.0f}mm", "#76963A", 2.8, 1.4))
+    # right: total length, logo height, logo centre
+    b.append(dim_v(X(TW) + 6, Y(0), Y(TL), f"{TL:.0f}mm", c, 3.2))
+    b.append(f'<path d="M{X(lx1)},{Y(ltop)} H{X(TW)+22} M{X(lx1)},{Y(ltop+MARK_H)} H{X(TW)+22}" stroke="#76963A" stroke-width="0.15" stroke-dasharray="0.8 0.6"/>')
+    b.append(dim_v(X(TW) + 20, Y(ltop), Y(ltop + MARK_H), f"{MARK_H:.1f}mm", "#76963A", 2.8))
+    b.append(f'<path d="M{X(13.5)},{Y(cyl)} H{X(TW)+44}" stroke="#76963A" stroke-width="0.15" stroke-dasharray="0.4 0.6"/>')
+    b.append(dim_v(X(TW) + 42, Y(0), Y(cyl), f"{cyl:.0f}mm", "#76963A", 2.8))
+    b.append(T(X(TW) + 42, Y(cyl) + 5, "atas tab →", 2.4, 400, "#76963A", "middle"))
+    b.append(T(X(TW) + 42, Y(cyl) + 8, "tengah logo", 2.4, 400, "#76963A", "middle"))
+    # left: strap insert
+    b.append(dim_v(X(0) - 6, Y(2), Y(2 + INS), "", "#c0392b", 2.8))
+    b.append(T(X(0) - 9, Y(2 + INS/2) + 1, "30mm", 3, 400, "#c0392b", "end"))
+    b.append(T(X(0) - 9, Y(2 + INS/2) + 5, "tali masuk", 2.4, 400, "#c0392b", "end"))
+    # stitch inset
+    b.append(dim_h(X(0), X(STI), Y(TL) + 3, "", "#888", 2, 0.8))
+    b.append(T(X(0) - 1, Y(TL) + 4, f"jahitan {STI:.1f}mm dari tepi", 2.4, 400, "#888", "end"))
+    # bottom: strap width (below ring) + legend
+    b.append(dim_h(X(1), X(26), Y(TL) + 33, "Lebar tali 25mm", "#c0392b", 2.8))
+    b.append(T(X(13.5), Y(TL) + 41, "DIBESARKAN ×2.6", 3.4, 700, "#222", "middle"))
+    b.append(T(X(13.5), Y(TL) + 46, "Garis putus merah = hujung tali di dalam tab", 2.6, 400, "#c0392b", "middle"))
+    # 1:1
+    b.append(tab(178, 48, 1))
+    b.append(T(178 + 13.5, 100, "SKALA 1:1", 3.4, 700, "#222", "middle"))
+    b.append(T(178 + 13.5, 105, "(saiz sebenar)", 2.8, 400, "#666", "middle"))
+    # specs
+    sx, sy = 218, 48
+    specs = [("Bahan", "Kulit PU, hijau zaitun"), ("Warna kulit", P["leather"].upper()),
+             ("Saiz siap", f"{TW:.0f} × {TL:.0f}mm, bucu bulat r1.4mm"),
+             ("Ketebalan", "± 1.2 – 1.5mm (2 lapis, lipat)"),
+             ("Jahitan", f"Benang krim, {STI:.1f}mm dari tepi, keliling"),
+             ("Tali masuk", "30mm ke dalam tab, dijahit"),
+             ("Logo", f"{MARK_W:.0f} × {MARK_H:.1f}mm, di tengah lebar"),
+             ("Kedudukan", f"Tengah logo {cyl:.0f}mm dari atas tab"),
+             ("Warna logo", "Hijau #6E9A33 + kelabu #6D6E71"),
+             ("Garis tepi", "Krim #FBF7EC ± 0.5mm keliling logo"),
+             ("Kaedah", "Cetak UV / silkscreen (+ emboss jika mahu)"),
+             ("Cangkuk", "Gelang D / lobster besi warna emas"),
+             ("Kuantiti", "2 tab × ______ lanyard")]
+    for i, (a, c2) in enumerate(specs):
+        y = sy + i * 9.5
+        b.append(T(sx, y, a.upper(), 2.8, 700, "#76963A"))
+        b.append(T(sx, y + 4, c2, 3.3, 400, "#333"))
+    b.append(T(20, H_ - 10, "Nota: semua ukuran dalam milimeter (mm). Fail logo: Logo_Azzuha_Emboss_Tab_Kulit.svg. Sila hantar sampel tab sebelum produksi.", 3, 400, "#888"))
+    return svgdoc(W_, H_, "".join(b)), W_, H_
+
+
 hero()
 closeup()
 svg, w, h = layout_sheet()
@@ -291,5 +362,10 @@ for i, side in enumerate(("front", "back")):
     pth = write(f"art{side}", page(svg, w, h, "mm", P["bg"]))
     jobs.append({"in": pth, "out": f"{WORK}/p_{i+2}.pdf", "w": w, "h": h, "unit": "mm"})
     jobs.append({"in": pth, "out": f"{d}/Azzuha_Lanyard_{nm}_300dpi.png", "w": w, "h": h, "unit": "mm", "scale": 3.125})
+svg, w, h = tab_sheet()
+mm_svg = svg.replace(f'width="{w}" height="{h}"', f'width="{w}mm" height="{h}mm"', 1)
+open(f"{d}/Azzuha_Tab_Kulit_Ukuran.svg", "w").write(mm_svg)
+jobs.append({"in": write("tab", page(mm_svg, w, h, "mm")), "out": f"{WORK}/p_4.pdf", "w": w, "h": h, "unit": "mm"})
+jobs.append({"in": write("tab", page(mm_svg, w, h, "mm")), "out": f"{OUT}/presentation/04_Ukuran_Tab_Kulit.png", "w": w, "h": h, "unit": "mm", "scale": 2.5})
 json.dump(jobs, open(f"{WORK}/jobs.json", "w"), indent=1)
 print(len(jobs), "jobs")

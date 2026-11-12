@@ -26,6 +26,7 @@ Fail:
   Azzuha_Lanyard_PRINT.pdf               Muka 1: susun atur + ukuran (skala 1:1)
                                          Muka 2: artwork DEPAN 1:1 (vektor, dengan bleed)
                                          Muka 3: artwork BELAKANG 1:1 (vektor, dengan bleed)
+                                         Muka 4: UKURAN TAB KULIT (27 x 38mm, logo, jahitan)
   Azzuha_Lanyard_Depan_1000x25mm.svg     Artwork depan (Illustrator / CorelDRAW)
   Azzuha_Lanyard_Belakang_1000x25mm.svg  Artwork belakang
   Azzuha_Lanyard_Layout.svg              Susun atur dengan ukuran
