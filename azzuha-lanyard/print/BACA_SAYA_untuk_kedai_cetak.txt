@@ -1,0 +1,30 @@
+LANYARD AZZUHA GROUP TRAVEL & TOURS — FAIL CETAKAN
+==================================================
+
+Jenis      : Sublimation lanyard, cetak 2 belah (depan & belakang berbeza)
+Saiz siap  : 25mm (lebar) x 1000mm (panjang)
+Bleed      : 2mm setiap sisi dalam fail artwork (saiz fail 1004 x 29mm)
+Hujung     : 30mm setiap hujung untuk jahitan / klip besi
+Aksesori   : Lobster hook besi warna emas + pemegang kad PVC
+Kuantiti   : ______ PCS
+Pilihan    : A = Hijau Zaitun Floral (latar #6F7C34)
+             B = Hijau Zamrud Floral (latar #2F4A2E)
+
+Fail dalam setiap folder Pilihan_A / Pilihan_B:
+  *_PRINT.pdf               Muka 1: susun atur + ukuran (skala 1:1)
+                            Muka 2: artwork DEPAN 1:1 (vektor, dengan bleed)
+                            Muka 3: artwork BELAKANG 1:1 (vektor, dengan bleed)
+  *_Depan_1000x25mm.svg     Artwork depan (boleh dibuka di Illustrator / CorelDRAW)
+  *_Belakang_1000x25mm.svg  Artwork belakang
+  *_Layout.svg              Susun atur dengan ukuran
+  *_300dpi.png              Versi raster 300dpi (jika mesin perlukan imej)
+
+Kedudukan elemen (bahagian depan, diukur dari titik tengah / belakang leher):
+  Bendera Malaysia : 175mm – 225mm dari tengah (50 x 25mm), kedua-dua belah
+  Logo Azzuha      : 236mm – 286mm dari tengah (panel putih 50mm)
+  Separuh kiri diputar 180° supaya logo & bendera tegak di kedua-dua belah bila dipakai.
+
+Nota:
+  - Logo Azzuha dalam fail ialah vektor (Logo_Azzuha_vektor.svg). Jika ada fail logo
+    asal (AI/PDF) dari syarikat, boleh ganti untuk ketepatan maksimum.
+  - Warna dalam fail adalah RGB/HEX; sila hantar proof warna sebelum produksi.
