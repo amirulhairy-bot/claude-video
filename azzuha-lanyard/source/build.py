@@ -111,8 +111,8 @@ def hero():
     k = 2.25
     cx, by = 540, 960
     b = [FX_DEFS, doc_defs(), f'<rect width="{W_}" height="{H_}" fill="url(#bgrad)"/>']
-    b.append(arm("flag", cx - 21, by, -10, k))
-    b.append(arm("logo", cx + 21, by, 10, k))
+    b.append(arm("L", cx - 21, by, -10, k))
+    b.append(arm("R", cx + 21, by, 10, k))
     b.append(hardware_and_card(cx, by + 22, k))
     px = 1020
     b.append(f'<rect x="{px-30}" y="0" width="{W_-px+30}" height="{H_}" fill="#fff" fill-opacity=".74"/>')
@@ -123,8 +123,8 @@ def hero():
     b.append(text(px, y + 46, "Lanyard Jemaah Azzuha", 36, 800))
     b.append(f'<rect x="{px}" y="{y+70}" width="70" height="4" fill="{P["peach"]}"/>')
     rows = [("Corak", "Bunga klasik hijau zaitun (ikut rujukan)"),
-            ("Tali kiri", "Bendera Malaysia di paras kolar"),
-            ("Tali kanan", "Logo Azzuha Group Travel & Tours"),
+            ("Bendera", "Jalur Gemilang di paras kolar, kedua-dua tali"),
+            ("Logo", "Logo Azzuha betul-betul di bawah bendera"),
             ("Saiz", "25mm (lebar) × 1000mm (panjang)"),
             ("Cetakan", "Sublimation penuh, 2 belah"),
             ("Hujung", "Tab kulit PU hijau + cangkuk emas")]
@@ -135,10 +135,10 @@ def hero():
         yy += 64
     yy += 18
     b.append(text(px, yy, "BAHAGIAN KOLAR (ZOOM)", 12, 700, "#8a8a8a", ls=1.5))
-    zk = 4.6
-    for i, kind in enumerate(("flag", "logo")):
+    zk = 3.6
+    for i, kind in enumerate(("L", "R")):
         x = px + i * (25 * zk + 40)
-        b.append(f'<g transform="translate({x},{yy+18})" filter="url(#sh)"><svg width="{25*zk}" height="{53*zk}" viewBox="0 {FEAT_V-6} 25 53">'
+        b.append(f'<g transform="translate({x},{yy+18})" filter="url(#sh)"><svg width="{25*zk}" height="{76*zk}" viewBox="0 {FEAT_V-5} 25 76">'
                  f'<use href="#s_{kind}"/></svg></g>')
     b.append(text(px, H_ - 40, "Azzuha Group Travel & Tours  •  Lanyard Jemaah", 13, 500, "#9a9a9a"))
     jobs.append({"in": write("hero", page(svgdoc(W_, H_, "".join(b)), W_, H_)), "out": f"{OUT}/presentation/01_Mockup_Lanyard_Azzuha.png",
@@ -155,12 +155,12 @@ def closeup():
                 f'<clipPath id="pc{kind}{x}"><rect x="0" y="{v0}" width="25" height="{v1-v0}"/></clipPath>'
                 f'<g clip-path="url(#pc{kind}{x})"><use href="#s_{kind}"/><rect x="0" y="{v0}" width="25" height="{v1-v0}" fill="url(#weave)"/>'
                 f'<rect x="0" y="{v0}" width="25" height="{v1-v0}" fill="url(#armshade)"/></g></g>')
-    b.append(piece("flag", 330, -40, 12, 6.0, 100, 330))
-    b.append(piece("logo", 760, -40, -6, 6.0, 100, 330))
+    b.append(piece("L", 230, -40, -10, 6.0, 100, 330))
+    b.append(piece("R", 790, -40, 10, 6.0, 100, 330))
     b.append(arm("plain", 1330, 1290, 18, 4.6, v_top=330))
     b.append(f'<rect x="1040" y="40" width="520" height="150" rx="16" fill="#fff" fill-opacity=".9" filter="url(#sh)"/>')
     b.append(text(1070, 95, "BUTIRAN DEKAT", 15, 700, "#76963A", ls=2))
-    b.append(text(1070, 135, "Bendera & Logo di paras kolar", 22, 800))
+    b.append(text(1070, 135, "Bendera + Logo, kedua-dua tali", 22, 800))
     b.append(text(1070, 165, "Tab kulit hijau (emboss logo) + cangkuk emas", 16, 500, "#666"))
     jobs.append({"in": write("close", page(svgdoc(W_, H_, "".join(b)), W_, H_)), "out": f"{OUT}/presentation/03_Butiran_Dekat.png",
                  "w": W_, "h": H_, "scale": 2})
@@ -197,17 +197,13 @@ def layout_sheet():
     b.append(dim_h(ox + 970, ox + 1000, fy + 32, "30mm"))
     b.append(f'<path d="M{ox+500},{fy-3} V{fy+28}" stroke="#e05a5a" stroke-width="0.3" stroke-dasharray="1.5 1"/>')
     b.append(T(ox + 500, fy + 33, "TENGAH / LIPATAN (belakang leher)", 3.2, 400, "#e05a5a", "middle"))
-    # right half: flag (strand v -> x = 500 + v)
-    fx = ox + 500 + FEAT_V
-    b.append(dim_h(fx, fx + FLAG_LEN, fy + 32, f"Bendera {FLAG_LEN:.0f}mm", "#c0392b"))
-    b.append(dim_h(ox + 500, fx, fy + 40, f"{FEAT_V:.0f}mm dari tengah", "#888"))
-    # left half: logo panel (x = 500 - v)
-    pv0 = FEAT_V + (FLAG_LEN - PANEL_LEN) / 2
-    lx1, lx2 = ox + 500 - pv0 - PANEL_LEN, ox + 500 - pv0
-    b.append(dim_h(lx1, lx2, fy + 32, f"Logo {PANEL_LEN:.0f}mm", "#c0392b"))
-    b.append(dim_h(lx2, ox + 500, fy + 40, f"{pv0:.1f}mm dari tengah", "#888"))
-    b.append(T(ox + 250, fy + 50, "TALI KIRI — LOGO AZZUHA", 3.6, 700, "#76963A", "middle"))
-    b.append(T(ox + 750, fy + 50, "TALI KANAN — BENDERA MALAYSIA", 3.6, 700, "#76963A", "middle"))
+    for sgn, lab in ((1, "TALI KANAN"), (-1, "TALI KIRI")):
+        f1, f2 = ox + 500 + sgn * FEAT_V, ox + 500 + sgn * (FEAT_V + FLAG_LEN)
+        l2 = ox + 500 + sgn * (FEAT_V + FLAG_LEN + PANEL_LEN)
+        b.append(dim_h(min(f1, f2), max(f1, f2), fy + 32, f"Bendera {FLAG_LEN:.0f}mm", "#c0392b"))
+        b.append(dim_h(min(f2, l2), max(f2, l2), fy + 32, f"Logo {PANEL_LEN:.0f}mm", "#c0392b"))
+        b.append(dim_h(min(ox + 500, f1), max(ox + 500, f1), fy + 40, f"{FEAT_V:.0f}mm dari tengah", "#888"))
+        b.append(T(ox + 500 + sgn * 250, fy + 50, lab + " — BENDERA + LOGO", 3.6, 700, "#76963A", "middle"))
     by_ = 140
     b.append(T(ox, by_ - 8, "BAHAGIAN BELAKANG (BACK) — corak bunga penuh", 5, 700, "#222"))
     b.append(f'<g transform="translate({ox},{by_})">{strip("back")}<rect width="1000" height="25" fill="none" stroke="#999" stroke-width="0.2"/></g>')
@@ -215,17 +211,17 @@ def layout_sheet():
     b.append(dim_v(ox + 1004, by_, by_ + 25, "25mm"))
     # zoom: both strands vertical
     zy = 190
-    b.append(T(ox, zy, "BUTIRAN (ZOOM 2×, arah bila dipakai)", 5, 700, "#222"))
-    for i, kind in enumerate(("logo", "flag")):
-        x = ox + i * 70
-        b.append(f'<g transform="translate({x},{zy+6})"><svg width="50" height="110" viewBox="0 {FEAT_V-7} 25 55"><use href="#s_{kind}"/></svg>'
-                 f'<rect width="50" height="110" fill="none" stroke="#999" stroke-width="0.3"/></g>')
-        b.append(T(x + 25, zy + 123, "Tali kiri" if kind == "logo" else "Tali kanan", 3.6, 600, "#555", "middle"))
+    b.append(T(ox, zy, "BUTIRAN (ZOOM 1.3×, arah bila dipakai)", 5, 700, "#222"))
+    for i, kind in enumerate(("L", "R")):
+        x = ox + i * 60
+        b.append(f'<g transform="translate({x},{zy+6})"><svg width="32" height="96" viewBox="0 {FEAT_V-4} 25 75"><use href="#s_{kind}"/></svg>'
+                 f'<rect width="32" height="96" fill="none" stroke="#999" stroke-width="0.3"/></g>')
+        b.append(T(x + 16, zy + 108, "Tali kiri" if kind == "L" else "Tali kanan", 3.6, 600, "#555", "middle"))
     sx = 230
     specs = [("Saiz siap", "25mm × 1000mm (fail artwork ada 2mm bleed setiap sisi = 1004 × 29mm)"),
              ("Kaedah", "Sublimation, cetak penuh 2 belah (depan & belakang berbeza)"),
-             ("Bendera", f"Satu tali sahaja, {FEAT_V:.0f}mm dari lipatan tengah (paras kolar)"),
-             ("Logo", "Tali sebelah, sama paras dengan bendera, atas panel krim"),
+             ("Bendera", f"Kedua-dua tali, {FEAT_V:.0f}mm dari lipatan tengah (paras kolar), jalur condong {SLANT_DEG:.0f}°"),
+             ("Logo", "Terus di bawah bendera pada kedua-dua tali, atas panel krim"),
              ("Hujung", "30mm setiap hujung masuk ke tab kulit PU hijau (#7E9435) dijahit"),
              ("Aksesori", "Cangkuk lobster besi warna emas + pemegang kad PVC"),
              ("Pilihan", "Tab kulit boleh di-emboss logo Azzuha (seperti rujukan)"),

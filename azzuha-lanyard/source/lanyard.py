@@ -21,7 +21,6 @@ LOGO_PATHS = "".join(re.findall(r'<path[^>]*/>', _logo))
 # feature placement (strand frame)
 FEAT_V = 140.0      # start of flag / logo block, mm from the neck fold
 FLAG_LEN = 41.0
-PANEL_LEN = 30.0
 
 
 def logo(x, y, h):
@@ -121,50 +120,56 @@ def tile(ns="", seed=11):
     return "".join(f'<g transform="translate(0,{off})">{b}</g>' for off in (-TILE, 0, TILE))
 
 
-def flag_vertical(y0):
-    """Stylised Jalur Gemilang for a hanging strap (as reference photo): blue canton across the strap with
-    crescent & 14-point star, red/white stripes below. Strand frame, starts at v=y0, spans u -3..28 (bleed)."""
+SLANT_DEG = 15.0    # stripes tilted so they read level when the strap hangs at an angle (as reference photo)
+PANEL_LEN = 26.0
+
+
+def _band(a, b, sign, fill):
+    """band between two slanted lines (offsets a<b measured along the strap centre)."""
+    t = math.tan(math.radians(SLANT_DEG)) * sign
+    yl = lambda off, u: off + t * (u - 12.5)
+    return (f'<polygon fill="{fill}" points="-3,{yl(a,-3):.3f} 28,{yl(a,28):.3f} 28,{yl(b,28)+0.03:.3f} -3,{yl(b,-3)+0.03:.3f}"/>')
+
+
+def feature_block(y0, sign):
+    """Flag (blue canton with crescent & star, red/white stripes) followed directly by the Azzuha logo panel.
+    sign=+1 for the strap that hangs on the wearer's right (viewer's left), -1 for the other."""
     o = []
     ch = 20.0
-    o.append(f'<rect x="-3" y="{y0}" width="31" height="{ch}" fill="#010066"/>')
+    o.append(_band(y0, y0 + ch, sign, "#010066"))
     stripes = ["#CC0001", "#FFFFFF"] * 3
     sh = (FLAG_LEN - ch) / len(stripes)
     for i, c in enumerate(stripes):
-        o.append(f'<rect x="-3" y="{y0+ch+i*sh:.3f}" width="31" height="{sh+0.03:.3f}" fill="{c}"/>')
-    cx, cy = 8.0, y0 + ch / 2
-    o.append(f'<circle cx="{cx}" cy="{cy}" r="6.2" fill="#FFCC00"/>')
-    o.append(f'<circle cx="{cx+1.5}" cy="{cy}" r="5.3" fill="#010066"/>')
+        o.append(_band(y0 + ch + i * sh, y0 + ch + (i + 1) * sh, sign, c))
+    cx, cy = 8.0, y0 + ch / 2 + math.tan(math.radians(SLANT_DEG)) * sign * (8.0 - 12.5)
     sx = 18.6
+    sy = y0 + ch / 2 + math.tan(math.radians(SLANT_DEG)) * sign * (sx - 12.5)
+    o.append(f'<circle cx="{cx}" cy="{cy:.3f}" r="6.0" fill="#FFCC00"/>')
+    o.append(f'<circle cx="{cx+1.45}" cy="{cy:.3f}" r="5.1" fill="#010066"/>')
     pts = []
     for i in range(28):
-        a = -math.pi / 2 + i * math.pi / 14
-        rr = 4.7 if i % 2 == 0 else 2.0
-        pts.append(f"{sx + rr*math.cos(a):.3f},{cy + rr*math.sin(a):.3f}")
+        a_ = -math.pi / 2 + i * math.pi / 14
+        rr = 4.5 if i % 2 == 0 else 1.9
+        pts.append(f"{sx + rr*math.cos(a_):.3f},{sy + rr*math.sin(a_):.3f}")
     o.append(f'<polygon points="{" ".join(pts)}" fill="#FFCC00"/>')
+    # logo panel directly under the flag
+    p0 = y0 + FLAG_LEN
+    o.append(_band(p0, p0 + PANEL_LEN, sign, P["panel"]))
+    o.append(_band(p0 + PANEL_LEN - 0.8, p0 + PANEL_LEN, sign, P["peach"]))
+    lw = 21.0
+    lh = lw * LOGO_H / LOGO_W
+    lg, _ = logo(0, 0, lh)
+    o.append(f'<g transform="translate({(25-lw)/2:.3f},{p0 + (PANEL_LEN-lh)/2:.3f})">{lg}</g>')
     return "".join(o)
 
 
-def logo_panel(y0):
-    """Azzuha logo panel across the strap, centred on the flag block."""
-    v0 = y0 + (FLAG_LEN - PANEL_LEN) / 2
-    lw = 21.5
-    lh = lw * LOGO_H / LOGO_W
-    lg, _ = logo(0, 0, lh)
-    return (f'<rect x="-3" y="{v0}" width="31" height="{PANEL_LEN}" fill="{P["panel"]}"/>'
-            f'<rect x="-3" y="{v0}" width="31" height="0.7" fill="{P["peach"]}"/>'
-            f'<rect x="-3" y="{v0+PANEL_LEN-0.7}" width="31" height="0.7" fill="{P["peach"]}"/>'
-            f'<g transform="translate({(25-lw)/2:.3f},{v0 + (PANEL_LEN-lh)/2:.3f})">{lg}</g>')
-
-
 def strand(kind, ns=""):
-    """kind: 'flag' | 'logo' | 'plain'. Strand art, u -3..28, v 0..503."""
+    """kind: 'L' | 'R' | 'plain'. Strand art, u -3..28, v 0..503."""
     o = [f'<rect x="-3" y="-3" width="31" height="509" fill="{P["bg"]}"/>']
     for i in range(int(503 // TILE) + 1):
         o.append(f'<use href="#{ns}tile" y="{i*TILE}"/>')
-    if kind == "flag":
-        o.append(flag_vertical(FEAT_V))
-    elif kind == "logo":
-        o.append(logo_panel(FEAT_V))
+    if kind in ("L", "R"):
+        o.append(feature_block(FEAT_V, 1 if kind == "L" else -1))
     return "".join(o)
 
 
@@ -172,13 +177,13 @@ def doc_defs(ns=""):
     """Everything referenced: motifs, tile, three strand variants."""
     return (f'<defs>{defs(ns)}<g id="{ns}tile">{tile(ns)}</g>'
             f'<clipPath id="{ns}sc"><rect x="-3" y="0" width="31" height="506"/></clipPath>'
-            + "".join(f'<g id="{ns}s_{k}"><g clip-path="url(#{ns}sc)">{strand(k, ns)}</g></g>' for k in ("flag", "logo", "plain"))
+            + "".join(f'<g id="{ns}s_{k}"><g clip-path="url(#{ns}sc)">{strand(k, ns)}</g></g>' for k in ("L", "R", "plain"))
             + '</defs>')
 
 
 def strip(side="front", ns="", bleed=0.0):
-    """Flat 1000 x 25 strip (origin at finished top-left). front: left half = logo strand, right half = flag strand."""
-    L, R = ("logo", "flag") if side == "front" else ("plain", "plain")
+    """Flat 1000 x 25 strip (origin at finished top-left). front: left half = viewer-left strap, right half = viewer-right strap (both flag + logo)."""
+    L, R = ("L", "R") if side == "front" else ("plain", "plain")
     cid = f"{ns}{side}clip{int(bleed*10)}"
     return (f'<defs><clipPath id="{cid}L"><rect x="{-bleed}" y="{-bleed}" width="{HALF+bleed}" height="{H+2*bleed}"/></clipPath>'
             f'<clipPath id="{cid}R"><rect x="{HALF}" y="{-bleed}" width="{HALF+bleed}" height="{H+2*bleed}"/></clipPath></defs>'

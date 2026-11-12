@@ -10,8 +10,10 @@ Pilihan    : Tab kulit di-emboss logo Azzuha (seperti rujukan)
 Kuantiti   : ______ PCS
 
 DEPAN  : Corak bunga hijau zaitun
-         - Tali kanan: Bendera Malaysia (41mm), 140mm dari lipatan tengah (paras kolar)
-         - Tali kiri : Logo Azzuha atas panel krim (30mm), sama paras dengan bendera
+         - KEDUA-DUA tali: Bendera Malaysia (41mm) bermula 140mm dari lipatan tengah (paras kolar)
+         - Logo Azzuha atas panel krim (26mm) terus di bawah bendera, kedua-dua tali
+         - Jalur bendera dicondongkan 15° (arah bertentangan pada tali kiri & kanan) supaya
+           nampak mendatar bila lanyard dipakai
 BELAKANG: Corak bunga penuh (tiada logo / bendera)
 
 Fail:
