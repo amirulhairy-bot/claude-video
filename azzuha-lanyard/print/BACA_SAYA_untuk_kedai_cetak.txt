@@ -12,8 +12,9 @@ Kuantiti   : ______ PCS
 DEPAN  : Corak bunga hijau zaitun
          - KEDUA-DUA tali: Bendera Malaysia (41mm) bermula 140mm dari lipatan tengah (paras kolar)
          - Logo Azzuha atas panel krim (26mm) terus di bawah bendera, kedua-dua tali
-         - Jalur bendera dicondongkan 15° (arah bertentangan pada tali kiri & kanan) supaya
-           nampak mendatar bila lanyard dipakai
+         - Jalur bendera dicondongkan 12° (arah bertentangan pada tali kiri & kanan) supaya
+           nampak mendatar bila lanyard dipakai.
+         - Logo juga diputar 12° (ikut arah jalur) supaya nampak lurus bila dipakai
 BELAKANG: Corak bunga penuh (tiada logo / bendera)
 
 Fail:

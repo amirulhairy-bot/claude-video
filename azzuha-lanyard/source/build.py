@@ -111,8 +111,8 @@ def hero():
     k = 2.25
     cx, by = 540, 960
     b = [FX_DEFS, doc_defs(), f'<rect width="{W_}" height="{H_}" fill="url(#bgrad)"/>']
-    b.append(arm("L", cx - 21, by, -10, k))
-    b.append(arm("R", cx + 21, by, 10, k))
+    b.append(arm("L", cx - 21, by, -12, k))
+    b.append(arm("R", cx + 21, by, 12, k))
     b.append(hardware_and_card(cx, by + 22, k))
     px = 1020
     b.append(f'<rect x="{px-30}" y="0" width="{W_-px+30}" height="{H_}" fill="#fff" fill-opacity=".74"/>')
@@ -155,8 +155,8 @@ def closeup():
                 f'<clipPath id="pc{kind}{x}"><rect x="0" y="{v0}" width="25" height="{v1-v0}"/></clipPath>'
                 f'<g clip-path="url(#pc{kind}{x})"><use href="#s_{kind}"/><rect x="0" y="{v0}" width="25" height="{v1-v0}" fill="url(#weave)"/>'
                 f'<rect x="0" y="{v0}" width="25" height="{v1-v0}" fill="url(#armshade)"/></g></g>')
-    b.append(piece("L", 230, -40, -10, 6.0, 100, 330))
-    b.append(piece("R", 790, -40, 10, 6.0, 100, 330))
+    b.append(piece("L", 260, -40, -12, 6.0, 100, 330))
+    b.append(piece("R", 760, -40, 12, 6.0, 100, 330))
     b.append(arm("plain", 1330, 1290, 18, 4.6, v_top=330))
     b.append(f'<rect x="1040" y="40" width="520" height="150" rx="16" fill="#fff" fill-opacity=".9" filter="url(#sh)"/>')
     b.append(text(1070, 95, "BUTIRAN DEKAT", 15, 700, "#76963A", ls=2))

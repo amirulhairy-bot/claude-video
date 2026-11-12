@@ -120,7 +120,7 @@ def tile(ns="", seed=11):
     return "".join(f'<g transform="translate(0,{off})">{b}</g>' for off in (-TILE, 0, TILE))
 
 
-SLANT_DEG = 15.0    # stripes tilted so they read level when the strap hangs at an angle (as reference photo)
+SLANT_DEG = 12.0    # stripes tilted so they read level when the strap hangs at an angle (as reference photo)
 PANEL_LEN = 26.0
 
 
@@ -156,10 +156,11 @@ def feature_block(y0, sign):
     p0 = y0 + FLAG_LEN
     o.append(_band(p0, p0 + PANEL_LEN, sign, P["panel"]))
     o.append(_band(p0 + PANEL_LEN - 0.8, p0 + PANEL_LEN, sign, P["peach"]))
-    lw = 21.0
+    # logo rotated by the same angle as the stripes so it reads level when the strap hangs
+    lw = 20.0
     lh = lw * LOGO_H / LOGO_W
-    lg, _ = logo(0, 0, lh)
-    o.append(f'<g transform="translate({(25-lw)/2:.3f},{p0 + (PANEL_LEN-lh)/2:.3f})">{lg}</g>')
+    lg, _ = logo(-lw / 2, -lh / 2, lh)
+    o.append(f'<g transform="translate(12.5,{p0 + PANEL_LEN/2:.3f}) rotate({sign*SLANT_DEG:.2f})">{lg}</g>')
     return "".join(o)
 
 
