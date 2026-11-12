@@ -1,5 +1,5 @@
 """Build presentation PNGs and print files. usage: python3 build.py <out_dir> <work_dir>; then node render2.js <work>/jobs.json"""
-import sys, os, json, html
+import sys, os, json, html, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lanyard import *
 
@@ -44,14 +44,28 @@ FX_DEFS = f'''<defs>
 </defs>'''
 
 
+_mk = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo_mark.svg')).read()
+_vb = [float(x) for x in re.search(r'viewBox="([^"]+)"', _mk).group(1).split()]
+_mk_d = "".join(re.findall(r' d="([^"]+)"', _mk))
+MARK_W = 17.0
+MARK_H = MARK_W * _vb[3] / _vb[2]
+
+
+def emboss_mark():
+    """Azzuha mark debossed into leather: dark recess + light lower edge highlight + tone fill."""
+    sc = MARK_W / _vb[2]
+    g = lambda dx, dy, fill, op: (f'<path transform="translate({dx},{dy}) scale({sc:.5f}) translate({-_vb[0]},{-_vb[1]})" '
+                                  f'd="{_mk_d}" fill="{fill}" fill-opacity="{op}"/>')
+    return g(0, 0.22, "#f4f8e2", .35) + g(0, -0.12, "#1f2a08", .45) + g(0, 0, "#5f7424", 1)
+
+
 def leather_tab(v0=468, length=38):
     """leather end tab in strand frame (mm), covering the sewn 30mm end + a little."""
     return f'''<g>
  <rect x="-1" y="{v0}" width="27" height="{length}" rx="1.4" fill="{P['leather']}"/>
  <rect x="-1" y="{v0}" width="27" height="{length}" rx="1.4" fill="url(#leathG)"/>
  <rect x="0.8" y="{v0+1.8}" width="23.4" height="{length-3.6}" rx="0.8" fill="none" stroke="#e9f0cf" stroke-opacity=".55" stroke-width="0.35" stroke-dasharray="1.1 0.7"/>
- <g transform="translate(5.2,{v0+9}) scale({14.6/LOGO_W*1:.5f}) scale(1)" class="emb" opacity=".22">{LOGO_NOID}</g>
- <g transform="translate(5.0,{v0+8.8}) scale({14.6/LOGO_W:.5f})" opacity=".18" style="mix-blend-mode:screen"><g class="emb" style="filter:invert(1)">{LOGO_NOID}</g></g>
+ <g transform="translate({12.5-MARK_W/2:.3f},{v0+length*0.42-MARK_H/2:.3f})">{emboss_mark()}</g>
 </g>'''
 
 
@@ -224,7 +238,7 @@ def layout_sheet():
              ("Logo", "Terus di bawah bendera pada kedua-dua tali, atas panel krim"),
              ("Hujung", "30mm setiap hujung masuk ke tab kulit PU hijau (#7E9435) dijahit"),
              ("Aksesori", "Cangkuk lobster besi warna emas + pemegang kad PVC"),
-             ("Pilihan", "Tab kulit boleh di-emboss logo Azzuha (seperti rujukan)"),
+             ("Emboss", "Logo Azzuha (tanpa tulisan bawah) di-emboss pada tab kulit, lebar ~17mm"),
              ("Kuantiti", "______ PCS")]
     yy = zy + 2
     for a, c in specs:
