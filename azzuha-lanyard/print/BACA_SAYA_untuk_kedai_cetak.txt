@@ -6,12 +6,10 @@ Saiz siap  : 25mm (lebar) x 1000mm (panjang)
 Bleed      : 2mm setiap sisi dalam fail artwork (saiz fail 1004 x 29mm)
 Hujung     : 30mm setiap hujung masuk ke dalam tab kulit PU hijau (#7E9435), dijahit
 Aksesori   : Cangkuk lobster besi warna emas + pemegang kad PVC
-Tab kulit  : Logo Azzuha BERWARNA (tanpa tulisan "GROUP TRAVEL & TOURS") pada kedua-dua
-             tab kulit, lebar ~17mm, tegak bila dipakai.
-             Warna logo: hijau #6E9A33 + kelabu #6D6E71, dengan garis tepi krim #FBF7EC ~0.5mm
-             supaya bahagian hijau tidak tenggelam atas kulit hijau.
-             Kaedah dicadangkan: cetak UV / silkscreen atas kulit (boleh digabung dengan emboss).
-             Fail: Logo_Azzuha_Emboss_Tab_Kulit.svg
+Tab kulit  : Logo Azzuha (TANPA tulisan "GROUP TRAVEL & TOURS") di-DEBOSS / stamping
+             tanpa warna (blind, tiada dakwat/foil) pada kedua-dua tab kulit.
+             Lebar logo ~17mm, tegak bila dipakai. Ukuran penuh: PDF muka 4.
+             Fail acuan: Logo_Azzuha_Emboss_Tab_Kulit.svg
 Kuantiti   : ______ PCS
 
 DEPAN  : Corak bunga hijau zaitun
