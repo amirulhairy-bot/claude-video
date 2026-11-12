@@ -51,12 +51,20 @@ MARK_W = 17.0
 MARK_H = MARK_W * _vb[3] / _vb[2]
 
 
+_mk_paths = re.findall(r'<path id="(\w)" fill="([^"]+)" d="([^"]+)"', _mk)
+
+
 def emboss_mark():
-    """Azzuha mark debossed into leather: dark recess + light lower edge highlight + tone fill."""
+    """Azzuha mark in full colour (green + grey) on the leather, with a slight pressed edge."""
     sc = MARK_W / _vb[2]
-    g = lambda dx, dy, fill, op: (f'<path transform="translate({dx},{dy}) scale({sc:.5f}) translate({-_vb[0]},{-_vb[1]})" '
-                                  f'd="{_mk_d}" fill="{fill}" fill-opacity="{op}"/>')
-    return g(0, 0.22, "#f4f8e2", .35) + g(0, -0.12, "#1f2a08", .45) + g(0, 0, "#5f7424", 1)
+    tf = lambda dx, dy: f'translate({dx},{dy}) scale({sc:.5f}) translate({-_vb[0]},{-_vb[1]})'
+    d_all = "".join(d for _, _, d in _mk_paths)
+    out = [f'<path transform="{tf(0, 0.2)}" d="{d_all}" fill="#f4f8e2" fill-opacity=".45"/>',
+           f'<path transform="{tf(0, -0.1)}" d="{d_all}" fill="#1f2a08" fill-opacity=".35" stroke="#1f2a08" stroke-opacity=".35" stroke-width="{0.55/sc:.1f}" stroke-linejoin="round"/>']
+    # cream keyline so the green parts stay visible on green leather
+    out.append(f'<path transform="{tf(0, 0)}" d="{d_all}" fill="#FBF7EC" stroke="#FBF7EC" stroke-width="{0.55/sc:.1f}" stroke-linejoin="round"/>')
+    out += [f'<path transform="{tf(0, 0)}" d="{d}" fill="{c}"/>' for _, c, d in _mk_paths]
+    return "".join(out)
 
 
 def leather_tab(v0=468, length=38):
@@ -238,7 +246,7 @@ def layout_sheet():
              ("Logo", "Terus di bawah bendera pada kedua-dua tali, atas panel krim"),
              ("Hujung", "30mm setiap hujung masuk ke tab kulit PU hijau (#7E9435) dijahit"),
              ("Aksesori", "Cangkuk lobster besi warna emas + pemegang kad PVC"),
-             ("Emboss", "Logo Azzuha (tanpa tulisan bawah) di-emboss pada tab kulit, lebar ~17mm"),
+             ("Tab kulit", "Logo Azzuha berwarna (hijau #6E9A33 + kelabu #6D6E71) + garis tepi krim 0.5mm, ~17mm"),
              ("Kuantiti", "______ PCS")]
     yy = zy + 2
     for a, c in specs:
