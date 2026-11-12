@@ -1,108 +1,25 @@
+"""Build presentation PNGs and print files. usage: python3 build.py <out_dir> <work_dir>; then node render2.js <work>/jobs.json"""
 import sys, os, json, html
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lanyard import *
 
-OUT = sys.argv[1]
-WORK = os.path.dirname(os.path.abspath(__file__))
-os.makedirs(f"{OUT}/presentation", exist_ok=True)
-for o in "AB":
-    os.makedirs(f"{OUT}/print/Pilihan_{o}", exist_ok=True)
+OUT, WORK = sys.argv[1], sys.argv[2]
+for d in ("presentation", "print"):
+    os.makedirs(f"{OUT}/{d}", exist_ok=True)
 jobs = []
-
 FONT = "Inter, 'DejaVu Sans', sans-serif"
 
 
 def page(svg, w, h, unit="px", bg="#fff"):
     return (f'<!doctype html><html><head><meta charset="utf-8"><style>@page{{size:{w}{unit} {h}{unit};margin:0}}'
-            f'html,body{{margin:0;padding:0;background:{bg}}}svg{{display:block}}</style></head><body>{svg}</body></html>')
+            f'html,body{{margin:0;padding:0;background:{bg}}}svg{{display:block}}'
+            f'.emb path{{fill:#000}}</style></head><body>{svg}</body></html>')
 
 
 def write(name, content):
-    path = f"{WORK}/build_{name}.html"
+    path = f"{WORK}/b_{name}.html"
     open(path, "w").write(content)
     return path
-
-
-def all_defs(uids=("A", "B")):
-    out = []
-    for u in uids:
-        p = PALETTES[u]
-        out.append(shared_defs(p, u))
-        out.append(strip(p, "front", u))   # registers half groups (rendered offscreen; we hide via wrapper)
-    return out
-
-
-def defs_only(u):
-    """defs of palette u + half groups without drawing anything visible."""
-    p = PALETTES[u]
-    return shared_defs(p, u) + f'<g transform="translate(-99999,-99999)">{strip(p, "front", u)}{strip(p, "back", u)}</g>'
-
-
-# ---------------------------------------------------------------- mockup
-def mockup(u, cx, by, k, ang=8.0, sep=34):
-    p = PALETTES[u]
-    v_top, v_end = 40, 472
-    arms = []
-    for sx, a in ((-1, -ang), (1, ang)):
-        arms.append(f'''<g transform="translate({cx + sx*sep},{by}) rotate({a}) scale({k}) translate(-12.5,{-v_end})" filter="url(#sh)">
-  <g clip-path="url(#armclip)">{strand_vertical(u)}</g>
-  <rect x="0" y="{v_top}" width="25" height="{v_end-v_top+4}" fill="url(#armshade)"/>
-</g>''')
-    # crimp / hardware
-    cw = 2 * sep + 25 * k + 16
-    hw = f'''
-<g filter="url(#sh)">
- <rect x="{cx-cw/2}" y="{by-6}" width="{cw}" height="{18*k*0.9}" rx="6" fill="{p['bg']}"/>
- <rect x="{cx-cw/2}" y="{by-6}" width="{cw}" height="{18*k*0.9}" rx="6" fill="url(#leather)"/>
- <rect x="{cx-cw/2+5}" y="{by-1}" width="{cw-10}" height="{18*k*0.9-10}" rx="4" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="1.4" stroke-dasharray="4 3"/>
- <g transform="translate({cx},{by+18*k*0.9-6})">
-   <rect x="-22" y="-4" width="44" height="14" rx="4" fill="url(#gold)"/>
-   <ellipse cx="0" cy="26" rx="15" ry="17" fill="none" stroke="url(#gold)" stroke-width="5"/>
-   <path d="M-10,42 h20 v10 c10,6 14,22 6,40 c-6,14 -26,14 -32,0 c-8,-18 -4,-34 6,-40Z" fill="url(#gold)"/>
-   <path d="M-2,58 c10,4 12,18 6,30" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.5"/>
-   <rect x="-4" y="88" width="8" height="18" rx="3" fill="url(#gold)"/>
- </g>
-</g>'''
-    # ID card
-    cy = by + 18 * k * 0.9 - 6 + 104
-    cwid, chei = 236, 352
-    x0 = cx - cwid / 2
-    lg, lw = logo(0, 0, 1)
-    lh = 88
-    lgs, lgw = logo(0, 0, lh)
-    card = f'''
-<g filter="url(#sh)">
- <rect x="{x0-10}" y="{cy}" width="{cwid+20}" height="{chei+26}" rx="12" fill="#ffffff" fill-opacity=".55" stroke="#ffffff" stroke-opacity=".9" stroke-width="2"/>
- <rect x="{cx-26}" y="{cy+9}" width="52" height="9" rx="4.5" fill="#d9d9d9" stroke="#bdbdbd"/>
- <rect x="{x0}" y="{cy+24}" width="{cwid}" height="{chei-6}" rx="8" fill="#ffffff"/>
- <clipPath id="cardclip{u}"><rect x="{x0}" y="{cy+24}" width="{cwid}" height="{chei-6}" rx="8"/></clipPath>
- <g clip-path="url(#cardclip{u})">
-  <g transform="translate({x0},{cy+24}) scale(2.4)"><use href="#halffront{u}" transform="translate(-5,-6)"/></g>
-  <rect x="{x0}" y="{cy+24+36}" width="{cwid}" height="{chei}" fill="#ffffff"/>
-  <rect x="{x0}" y="{cy+24+33}" width="{cwid}" height="3" fill="{p['trim']}"/>
- </g>
- <g transform="translate({cx-lgw/2},{cy+72})">{lgs}</g>
- <rect x="{cx-38}" y="{cy+172}" width="76" height="90" rx="4" fill="#eef0e6" stroke="#cfd4bf"/>
- <circle cx="{cx}" cy="{cy+205}" r="17" fill="#cfd4bf"/><path d="M{cx-30},{cy+262} c4,-30 56,-30 60,0Z" fill="#cfd4bf"/>
- <text x="{cx}" y="{cy+290}" text-anchor="middle" font-family="{FONT}" font-size="15" font-weight="700" fill="#3a3a3a">NAMA JEMAAH</text>
- <text x="{cx}" y="{cy+310}" text-anchor="middle" font-family="{FONT}" font-size="11" fill="#777">No. Pasport : A00000000</text>
- <text x="{cx}" y="{cy+328}" text-anchor="middle" font-family="{FONT}" font-size="11" fill="#777">Kumpulan : ——</text>
- <g transform="translate({x0+cwid-46},{cy+352})">{flag(0,0,30)}</g>
-</g>'''
-    return "".join(arms) + hw + card
-
-
-COMMON_DEFS = f'''<defs>
-<filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#3b3020" flood-opacity=".28"/></filter>
-<clipPath id="armclip"><rect x="0" y="40" width="25" height="436"/></clipPath>
-<linearGradient id="armshade" x1="0" x2="1" y1="0" y2="0">
- <stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".12" stop-color="#000" stop-opacity=".06"/>
- <stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset=".88" stop-color="#000" stop-opacity=".06"/>
- <stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
-<linearGradient id="leather" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
-<linearGradient id="gold" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f7e3a1"/><stop offset=".45" stop-color="#c9a24a"/><stop offset=".7" stop-color="#f2d98a"/><stop offset="1" stop-color="#9c7a2e"/></linearGradient>
-<radialGradient id="bgrad" cx=".5" cy=".35" r=".8"><stop offset="0" stop-color="#f7f3ea"/><stop offset="1" stop-color="#e3dccb"/></radialGradient>
-</defs>'''
 
 
 def text(x, y, s, size, weight=400, fill="#2d2d2d", anchor="start", ls=0):
@@ -110,74 +27,149 @@ def text(x, y, s, size, weight=400, fill="#2d2d2d", anchor="start", ls=0):
             f'text-anchor="{anchor}" letter-spacing="{ls}">{html.escape(s)}</text>')
 
 
-# ---------------------------------------------------------------- Image 1: hero mockup option A
-def hero(u, fname, title_opt):
-    p = PALETTES[u]
+LOGO_NOID = LOGO_PATHS.replace('id="g" ', '').replace('id="k" ', '')
+
+FX_DEFS = f'''<defs>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#2a2418" flood-opacity=".30"/></filter>
+<linearGradient id="armshade" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".1" stop-color="#000" stop-opacity=".05"/>
+ <stop offset=".45" stop-color="#fff" stop-opacity=".10"/><stop offset=".9" stop-color="#000" stop-opacity=".06"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
+<pattern id="weave" width="0.55" height="0.55" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+ <rect width="0.55" height="0.26" fill="#fff" fill-opacity=".07"/></pattern>
+<linearGradient id="leathG" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
+<linearGradient id="gold" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fbe9ae"/><stop offset=".4" stop-color="#cfa64c"/>
+ <stop offset=".7" stop-color="#f4dc8f"/><stop offset="1" stop-color="#9a782c"/></linearGradient>
+<radialGradient id="bgrad" cx=".45" cy=".35" r=".85"><stop offset="0" stop-color="#f7f3ea"/><stop offset="1" stop-color="#e2dac7"/></radialGradient>
+<radialGradient id="carpet" cx=".5" cy=".4" r=".9"><stop offset="0" stop-color="#8b8780"/><stop offset="1" stop-color="#5d5a55"/></radialGradient>
+<filter id="noise"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .22 0"/></filter>
+</defs>'''
+
+
+def leather_tab(v0=468, length=38):
+    """leather end tab in strand frame (mm), covering the sewn 30mm end + a little."""
+    return f'''<g>
+ <rect x="-1" y="{v0}" width="27" height="{length}" rx="1.4" fill="{P['leather']}"/>
+ <rect x="-1" y="{v0}" width="27" height="{length}" rx="1.4" fill="url(#leathG)"/>
+ <rect x="0.8" y="{v0+1.8}" width="23.4" height="{length-3.6}" rx="0.8" fill="none" stroke="#e9f0cf" stroke-opacity=".55" stroke-width="0.35" stroke-dasharray="1.1 0.7"/>
+ <g transform="translate(5.2,{v0+9}) scale({14.6/LOGO_W*1:.5f}) scale(1)" class="emb" opacity=".22">{LOGO_NOID}</g>
+ <g transform="translate(5.0,{v0+8.8}) scale({14.6/LOGO_W:.5f})" opacity=".18" style="mix-blend-mode:screen"><g class="emb" style="filter:invert(1)">{LOGO_NOID}</g></g>
+</g>'''
+
+
+def arm(kind, bx, by, ang, k, v_top=30, v_end=506, rings=True):
+    """strand with neck at top, its hook end at (bx,by) in px."""
+    ring = (f'<g transform="translate(12.5,{v_end+1.5})"><rect x="-4" y="-1.8" width="8" height="3.2" rx="1" fill="url(#gold)"/>'
+            f'<ellipse cx="0" cy="4.6" rx="3" ry="3.6" fill="none" stroke="url(#gold)" stroke-width="1.1"/></g>') if rings else ''
+    return f'''<g transform="translate({bx},{by}) rotate({ang}) scale({k}) translate(-12.5,{-v_end-8})" filter="url(#sh)">
+ <clipPath id="ac{kind}{bx:.0f}"><rect x="0" y="{v_top}" width="25" height="{v_end-v_top}"/></clipPath>
+ <g clip-path="url(#ac{kind}{bx:.0f})"><use href="#s_{kind}"/>
+   <rect x="0" y="{v_top}" width="25" height="{v_end}" fill="url(#weave)"/>
+   <rect x="0" y="{v_top}" width="25" height="{v_end}" fill="url(#armshade)"/></g>
+ {leather_tab()}{ring}
+</g>'''
+
+
+def hardware_and_card(cx, y, k):
+    """lobster clip from y downwards (px) + ID card. returns svg."""
+    s = k / 2.9
+    clip = f'''<g transform="translate({cx},{y}) scale({s})" filter="url(#sh)">
+  <circle cx="0" cy="0" r="13" fill="none" stroke="url(#gold)" stroke-width="5"/>
+  <rect x="-7" y="10" width="14" height="14" rx="3" fill="url(#gold)"/>
+  <path d="M-12,24 h24 l2,8 c12,10 14,34 2,52 c-8,12 -26,12 -34,0 c-12,-18 -10,-42 2,-52Z" fill="url(#gold)"/>
+  <path d="M-4,40 c10,6 12,24 4,38" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="3"/>
+  <path d="M10,44 v20" stroke="#8a6a25" stroke-width="3"/>
+  <rect x="-5" y="82" width="10" height="20" rx="3" fill="url(#gold)"/>
+</g>'''
+    cyy = y + 98 * s
+    cw, chh = 236 * s, 350 * s
+    x0 = cx - cw / 2
+    lh = 84 * s
+    lg, lw = logo(0, 0, lh)
+    card = f'''<g filter="url(#sh)">
+ <rect x="{x0-10*s}" y="{cyy}" width="{cw+20*s}" height="{chh+26*s}" rx="{12*s}" fill="#fff" fill-opacity=".6" stroke="#fff" stroke-width="2"/>
+ <rect x="{cx-26*s}" y="{cyy+9*s}" width="{52*s}" height="{9*s}" rx="{4.5*s}" fill="#d9d9d9" stroke="#bdbdbd"/>
+ <rect x="{x0}" y="{cyy+24*s}" width="{cw}" height="{chh-6*s}" rx="{8*s}" fill="#fff"/>
+ <rect x="{x0}" y="{cyy+24*s}" width="{cw}" height="{36*s}" fill="{P['bg']}"/><svg x="{x0}" y="{cyy+24*s}" width="{cw}" height="{36*s}" viewBox="0 0 {236/2.6:.2f} {36/2.6:.2f}" preserveAspectRatio="xMidYMid slice"><use href="#tile" transform="translate(0,25) rotate(-90)"/></svg>
+ 
+ <rect x="{x0}" y="{cyy+58*s}" width="{cw}" height="{3*s}" fill="{P['peach']}"/>
+ <g transform="translate({cx-lw/2},{cyy+76*s})">{lg}</g>
+ <rect x="{cx-38*s}" y="{cyy+172*s}" width="{76*s}" height="{90*s}" rx="4" fill="#eef0e6" stroke="#cfd4bf"/>
+ <circle cx="{cx}" cy="{cyy+205*s}" r="{17*s}" fill="#cfd4bf"/><path d="M{cx-30*s},{cyy+262*s} c{4*s},{-30*s} {56*s},{-30*s} {60*s},0Z" fill="#cfd4bf"/>
+ {text(cx, cyy+290*s, "NAMA JEMAAH", 15*s, 700, "#3a3a3a", "middle")}
+ {text(cx, cyy+310*s, "No. Pasport : A00000000", 11*s, 400, "#777", "middle")}
+ {text(cx, cyy+328*s, "Kumpulan : ——", 11*s, 400, "#777", "middle")}
+</g>'''
+    return clip + card
+
+
+def svgdoc(w, h, body, unit=""):
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}{unit}" height="{h}{unit}" viewBox="0 0 {w} {h}">{body}</svg>'
+
+
+# ------------------------------------------------------------------ 01 hero mockup
+def hero():
     W_, H_ = 1600, 1500
-    k = 2.9
-    body = [COMMON_DEFS, defs_only(u), f'<rect width="{W_}" height="{H_}" fill="url(#bgrad)"/>']
-    body.append(mockup(u, 560, 900, k))
-    # info panel
-    px = 1030
-    body.append(f'<rect x="{px-30}" y="0" width="{W_-px+30}" height="{H_}" fill="#ffffff" fill-opacity=".72"/>')
-    lg, lw = logo(0, 0, 120)
-    body.append(f'<g transform="translate({px},70)">{lg}</g>')
-    y = 260
-    body.append(text(px, y, "CADANGAN REKA BENTUK LANYARD", 16, 700, "#76963A", ls=2))
-    body.append(text(px, y + 46, title_opt, 34, 800, "#2d2d2d"))
-    body.append(f'<rect x="{px}" y="{y+70}" width="70" height="4" fill="{p["trim"]}"/>')
-    bullets = [
-        ("Saiz", "25mm (lebar) × 1000mm (panjang)"),
-        ("Cetakan", "Sublimation penuh, 2 belah"),
-        ("Depan", "Corak bunga + Bendera Malaysia + logo Azzuha"),
-        ("Belakang", "Corak bunga penuh"),
-        ("Kedudukan", "Bendera & logo di paras dada, kedua-dua belah"),
-        ("Aksesori", "Cangkuk besi warna emas + pemegang kad"),
-    ]
-    yy = y + 130
-    for a, b in bullets:
-        body.append(text(px, yy, a.upper(), 12, 700, "#8a8a8a", ls=1.5))
-        body.append(text(px, yy + 24, b, 19, 500, "#333"))
-        yy += 66
-    # close-up
-    yy += 20
-    body.append(text(px, yy, "BAHAGIAN DADA (ZOOM)", 12, 700, "#8a8a8a", ls=1.5))
-    zk = 3.2
-    body.append(f'''<g transform="translate({px},{yy+16})" filter="url(#sh)"><svg width="{130*zk}" height="{25*zk}" viewBox="165 0 130 25">
-      <use href="#halffront{u}"/></svg></g>''')
-    body.append(text(px, yy + 16 + 25 * zk + 34, "Warna: " + "  ".join([p["bg"], p["trim"], "#76963A"]), 13, 500, "#777"))
-    body.append(text(px, H_ - 40, "Azzuha Group Travel & Tours  •  Lanyard Jemaah", 13, 500, "#9a9a9a"))
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{W_}" height="{H_}" viewBox="0 0 {W_} {H_}">{"".join(body)}</svg>'
-    jobs.append(dict(**{"in": write(fname, page(svg, W_, H_)), "out": f"{OUT}/presentation/{fname}.png", "w": W_, "h": H_, "scale": 2}))
+    k = 2.25
+    cx, by = 540, 960
+    b = [FX_DEFS, doc_defs(), f'<rect width="{W_}" height="{H_}" fill="url(#bgrad)"/>']
+    b.append(arm("flag", cx - 21, by, -10, k))
+    b.append(arm("logo", cx + 21, by, 10, k))
+    b.append(hardware_and_card(cx, by + 22, k))
+    px = 1020
+    b.append(f'<rect x="{px-30}" y="0" width="{W_-px+30}" height="{H_}" fill="#fff" fill-opacity=".74"/>')
+    lg, _ = logo(0, 0, 115)
+    b.append(f'<g transform="translate({px},70)">{lg}</g>')
+    y = 255
+    b.append(text(px, y, "CADANGAN REKA BENTUK LANYARD", 16, 700, "#76963A", ls=2))
+    b.append(text(px, y + 46, "Lanyard Jemaah Azzuha", 36, 800))
+    b.append(f'<rect x="{px}" y="{y+70}" width="70" height="4" fill="{P["peach"]}"/>')
+    rows = [("Corak", "Bunga klasik hijau zaitun (ikut rujukan)"),
+            ("Tali kiri", "Bendera Malaysia di paras kolar"),
+            ("Tali kanan", "Logo Azzuha Group Travel & Tours"),
+            ("Saiz", "25mm (lebar) × 1000mm (panjang)"),
+            ("Cetakan", "Sublimation penuh, 2 belah"),
+            ("Hujung", "Tab kulit PU hijau + cangkuk emas")]
+    yy = y + 128
+    for a, c in rows:
+        b.append(text(px, yy, a.upper(), 12, 700, "#8a8a8a", ls=1.5))
+        b.append(text(px, yy + 24, c, 19, 500, "#333"))
+        yy += 64
+    yy += 18
+    b.append(text(px, yy, "BAHAGIAN KOLAR (ZOOM)", 12, 700, "#8a8a8a", ls=1.5))
+    zk = 4.6
+    for i, kind in enumerate(("flag", "logo")):
+        x = px + i * (25 * zk + 40)
+        b.append(f'<g transform="translate({x},{yy+18})" filter="url(#sh)"><svg width="{25*zk}" height="{53*zk}" viewBox="0 {FEAT_V-6} 25 53">'
+                 f'<use href="#s_{kind}"/></svg></g>')
+    b.append(text(px, H_ - 40, "Azzuha Group Travel & Tours  •  Lanyard Jemaah", 13, 500, "#9a9a9a"))
+    jobs.append({"in": write("hero", page(svgdoc(W_, H_, "".join(b)), W_, H_)), "out": f"{OUT}/presentation/01_Mockup_Lanyard_Azzuha.png",
+                 "w": W_, "h": H_, "scale": 2})
 
 
-# ---------------------------------------------------------------- Image 3: options A vs B
-def compare():
-    W_, H_ = 1600, 1560
-    k = 2.55
-    body = [COMMON_DEFS, defs_only("A"), defs_only("B"), f'<rect width="{W_}" height="{H_}" fill="url(#bgrad)"/>']
-    body.append(mockup("A", 420, 900, k, ang=7))
-    body.append(mockup("B", 1180, 900, k, ang=7))
-    body.append(f'<rect x="590" y="40" width="420" height="270" rx="18" fill="#fff" fill-opacity=".85" filter="url(#sh)"/>')
-    lg, lw = logo(0, 0, 90)
-    body.append(f'<g transform="translate({800-lw/2},70)">{lg}</g>')
-    body.append(text(800, 210, "PILIHAN WARNA LANYARD", 22, 800, "#2d2d2d", "middle", 1))
-    body.append(text(800, 242, "Reka bentuk sama, warna latar berbeza", 15, 500, "#777", "middle"))
-    body.append(text(800, 275, "25mm × 1000mm • Sublimation 2 belah", 15, 500, "#777", "middle"))
-    for u, x in (("A", 420), ("B", 1180)):
-        p = PALETTES[u]
-        body.append(f'<rect x="{x-170}" y="{H_-100}" width="340" height="68" rx="34" fill="#fff" filter="url(#sh)"/>')
-        body.append(f'<circle cx="{x-130}" cy="{H_-66}" r="18" fill="{p["bg"]}"/>')
-        body.append(text(x - 100, H_ - 72, f"PILIHAN {u}", 13, 800, "#76963A", ls=1.5))
-        body.append(text(x - 100, H_ - 50, p["name"], 19, 700, "#2d2d2d"))
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{W_}" height="{H_}" viewBox="0 0 {W_} {H_}">{"".join(body)}</svg>'
-    jobs.append({"in": write("compare", page(svg, W_, H_)), "out": f"{OUT}/presentation/03_Pilihan_A_vs_B.png", "w": W_, "h": H_, "scale": 2})
+# ------------------------------------------------------------------ 03 close-up flat lay (like the reference photo)
+def closeup():
+    W_, H_ = 1600, 1500
+    b = [FX_DEFS, doc_defs(), f'<rect width="{W_}" height="{H_}" fill="url(#carpet)"/>',
+         f'<rect width="{W_}" height="{H_}" filter="url(#noise)"/>']
+    def piece(kind, x, y, ang, k, v0, v1):
+        return (f'<g transform="translate({x},{y}) rotate({ang}) scale({k}) translate(-12.5,{-v0})" filter="url(#sh)">'
+                f'<clipPath id="pc{kind}{x}"><rect x="0" y="{v0}" width="25" height="{v1-v0}"/></clipPath>'
+                f'<g clip-path="url(#pc{kind}{x})"><use href="#s_{kind}"/><rect x="0" y="{v0}" width="25" height="{v1-v0}" fill="url(#weave)"/>'
+                f'<rect x="0" y="{v0}" width="25" height="{v1-v0}" fill="url(#armshade)"/></g></g>')
+    b.append(piece("flag", 330, -40, 12, 6.0, 100, 330))
+    b.append(piece("logo", 760, -40, -6, 6.0, 100, 330))
+    b.append(arm("plain", 1330, 1290, 18, 4.6, v_top=330))
+    b.append(f'<rect x="1040" y="40" width="520" height="150" rx="16" fill="#fff" fill-opacity=".9" filter="url(#sh)"/>')
+    b.append(text(1070, 95, "BUTIRAN DEKAT", 15, 700, "#76963A", ls=2))
+    b.append(text(1070, 135, "Bendera & Logo di paras kolar", 22, 800))
+    b.append(text(1070, 165, "Tab kulit hijau (emboss logo) + cangkuk emas", 16, 500, "#666"))
+    jobs.append({"in": write("close", page(svgdoc(W_, H_, "".join(b)), W_, H_)), "out": f"{OUT}/presentation/03_Butiran_Dekat.png",
+                 "w": W_, "h": H_, "scale": 2})
 
 
-# ---------------------------------------------------------------- technical layout (used for presentation PNG and print PDF)
+# ------------------------------------------------------------------ technical layout sheet (mm)
 def dim_h(x1, x2, y, label, col="#3fa7c9", fs=3.2, tick=2.2):
-    return (f'<g stroke="{col}" stroke-width="0.25" fill="none"><path d="M{x1},{y} H{x2} M{x1},{y-tick} V{y+tick} M{x2},{y-tick} V{y+tick}"/>'
-            f'<path d="M{x1},{y} l1.6,-0.8 v1.6Z M{x2},{y} l-1.6,-0.8 v1.6Z" fill="{col}"/></g>'
+    return (f'<g stroke="{col}" stroke-width="0.25" fill="none"><path d="M{x1},{y} H{x2} M{x1},{y-tick} V{y+tick} M{x2},{y-tick} V{y+tick}"/></g>'
+            f'<path d="M{x1},{y} l1.6,-0.8 v1.6Z M{x2},{y} l-1.6,-0.8 v1.6Z" fill="{col}"/>'
             f'<text x="{(x1+x2)/2}" y="{y-1.2}" font-family="{FONT}" font-size="{fs}" fill="{col}" text-anchor="middle">{label}</text>')
 
 
@@ -186,107 +178,100 @@ def dim_v(x, y1, y2, label, col="#3fa7c9", fs=3.2):
             f'<text x="{x+2.5}" y="{(y1+y2)/2+1.2}" font-family="{FONT}" font-size="{fs}" fill="{col}">{label}</text>')
 
 
-def layout_sheet(u):
-    """Returns svg body in mm for a 1100 x 330 mm sheet."""
-    p = PALETTES[u]
+def T(x, y, s, fs, w=400, fill="#333", anchor="start"):
+    return f'<text x="{x}" y="{y}" font-family="{FONT}" font-size="{fs}" font-weight="{w}" fill="{fill}" text-anchor="{anchor}">{html.escape(s)}</text>'
+
+
+def layout_sheet():
     W_, H_ = 1100, 330
     ox = 50
-    b = [COMMON_DEFS, shared_defs(p, u), f'<rect width="{W_}" height="{H_}" fill="#fff"/>']
-    b.append(f'<text x="{W_/2}" y="22" font-family="{FONT}" font-size="11" font-weight="700" fill="#222" text-anchor="middle" letter-spacing="0.5">SUBLIMATION LANYARD — AZZUHA GROUP TRAVEL &amp; TOURS</text>')
-    b.append(f'<text x="{W_/2}" y="31" font-family="{FONT}" font-size="5" fill="#666" text-anchor="middle">Pilihan {u}: {p["name"]}  •  Saiz siap 25mm × 1000mm  •  Skala 1:1 (ukuran sebenar)</text>')
-    # front
+    b = [doc_defs(), f'<rect width="{W_}" height="{H_}" fill="#fff"/>']
+    b.append(T(W_/2, 22, "SUBLIMATION LANYARD — AZZUHA GROUP TRAVEL & TOURS", 11, 700, "#222", "middle"))
+    b.append(T(W_/2, 31, "Saiz siap 25mm × 1000mm  •  Cetak 2 belah  •  Skala 1:1 (ukuran sebenar)", 5, 400, "#666", "middle"))
     fy = 62
-    b.append(f'<text x="{ox}" y="{fy-14}" font-family="{FONT}" font-size="5" font-weight="700" fill="#222">BAHAGIAN DEPAN (FRONT)</text>')
-    b.append(f'<g transform="translate({ox},{fy})">{strip(p, "front", u)}<rect width="1000" height="25" fill="none" stroke="#999" stroke-width="0.2"/></g>')
+    b.append(T(ox, fy - 14, "BAHAGIAN DEPAN (FRONT)", 5, 700, "#222"))
+    b.append(f'<g transform="translate({ox},{fy})">{strip("front")}<rect width="1000" height="25" fill="none" stroke="#999" stroke-width="0.2"/></g>')
     b.append(dim_h(ox, ox + 1000, fy - 6, "1000mm"))
     b.append(dim_v(ox + 1004, fy, fy + 25, "25mm"))
     b.append(dim_h(ox, ox + 30, fy + 32, "30mm"))
     b.append(dim_h(ox + 970, ox + 1000, fy + 32, "30mm"))
-    # centre mark
     b.append(f'<path d="M{ox+500},{fy-3} V{fy+28}" stroke="#e05a5a" stroke-width="0.3" stroke-dasharray="1.5 1"/>')
-    b.append(f'<text x="{ox+500}" y="{fy+33}" font-family="{FONT}" font-size="3.2" fill="#e05a5a" text-anchor="middle">TENGAH / LIPATAN (belakang leher)</text>')
-    # feature positions (right half)
-    fx = ox + HALF + FLAG_X
-    px_ = ox + HALF + PANEL_X
-    b.append(dim_h(fx, fx + FLAG_W, fy + 32, "Bendera 50mm", "#c0392b"))
-    b.append(dim_h(px_, px_ + PANEL_W, fy + 32, "Logo 50mm", "#c0392b"))
-    b.append(dim_h(ox + 500, fx, fy + 40, f"{FLAG_X:.0f}mm dari tengah", "#888"))
-    b.append(dim_h(px_ + PANEL_W, ox + 1000, fy + 40, f"{1000-(500+PANEL_X+PANEL_W):.0f}mm ke hujung", "#888"))
-    lx = ox + HALF - FLAG_X - FLAG_W
-    b.append(dim_h(lx, lx + FLAG_W, fy + 32, "Bendera 50mm", "#c0392b"))
-    b.append(dim_h(ox + HALF - PANEL_X - PANEL_W, ox + HALF - PANEL_X, fy + 32, "Logo 50mm", "#c0392b"))
-    b.append(dim_h(ox, ox + HALF - PANEL_X - PANEL_W, fy + 40, f"{HALF-PANEL_X-PANEL_W:.0f}mm ke hujung", "#888"))
-    b.append(dim_h(lx + FLAG_W, ox + 500, fy + 40, f"{FLAG_X:.0f}mm dari tengah", "#888"))
-    # back
+    b.append(T(ox + 500, fy + 33, "TENGAH / LIPATAN (belakang leher)", 3.2, 400, "#e05a5a", "middle"))
+    # right half: flag (strand v -> x = 500 + v)
+    fx = ox + 500 + FEAT_V
+    b.append(dim_h(fx, fx + FLAG_LEN, fy + 32, f"Bendera {FLAG_LEN:.0f}mm", "#c0392b"))
+    b.append(dim_h(ox + 500, fx, fy + 40, f"{FEAT_V:.0f}mm dari tengah", "#888"))
+    # left half: logo panel (x = 500 - v)
+    pv0 = FEAT_V + (FLAG_LEN - PANEL_LEN) / 2
+    lx1, lx2 = ox + 500 - pv0 - PANEL_LEN, ox + 500 - pv0
+    b.append(dim_h(lx1, lx2, fy + 32, f"Logo {PANEL_LEN:.0f}mm", "#c0392b"))
+    b.append(dim_h(lx2, ox + 500, fy + 40, f"{pv0:.1f}mm dari tengah", "#888"))
+    b.append(T(ox + 250, fy + 50, "TALI KIRI — LOGO AZZUHA", 3.6, 700, "#76963A", "middle"))
+    b.append(T(ox + 750, fy + 50, "TALI KANAN — BENDERA MALAYSIA", 3.6, 700, "#76963A", "middle"))
     by_ = 140
-    b.append(f'<text x="{ox}" y="{by_-8}" font-family="{FONT}" font-size="5" font-weight="700" fill="#222">BAHAGIAN BELAKANG (BACK)</text>')
-    b.append(f'<g transform="translate({ox},{by_})">{strip(p, "back", u)}<rect width="1000" height="25" fill="none" stroke="#999" stroke-width="0.2"/></g>')
+    b.append(T(ox, by_ - 8, "BAHAGIAN BELAKANG (BACK) — corak bunga penuh", 5, 700, "#222"))
+    b.append(f'<g transform="translate({ox},{by_})">{strip("back")}<rect width="1000" height="25" fill="none" stroke="#999" stroke-width="0.2"/></g>')
     b.append(dim_h(ox, ox + 1000, by_ + 32, "1000mm"))
     b.append(dim_v(ox + 1004, by_, by_ + 25, "25mm"))
-    # zoom detail
-    zy = 195
-    b.append(f'<text x="{ox}" y="{zy}" font-family="{FONT}" font-size="5" font-weight="700" fill="#222">BUTIRAN BENDERA &amp; LOGO (ZOOM 2.5×)</text>')
-    zk = 2.5
-    b.append(f'<g transform="translate({ox},{zy+6})"><svg width="{130*zk}" height="{25*zk}" viewBox="165 0 130 25"><use href="#halffront{u}"/></svg>'
-             f'<rect width="{130*zk}" height="{25*zk}" fill="none" stroke="#999" stroke-width="0.3"/></g>')
-    # specs
-    sx = 420
-    specs = [
-        ("Saiz siap", "25mm × 1000mm (+2mm bleed di setiap sisi dalam fail cetakan)"),
-        ("Kaedah", "Sublimation, cetak penuh 2 belah (depan & belakang berbeza)"),
-        ("Hujung", "30mm setiap hujung untuk jahitan / klip besi (tiada elemen penting)"),
-        ("Aksesori", "Lobster hook besi warna emas + pemegang kad PVC"),
-        ("Orientasi", "Separuh kiri diputar 180° — logo & bendera tegak di kedua-dua belah bila dipakai"),
-        ("Kuantiti", "______ PCS"),
-    ]
+    # zoom: both strands vertical
+    zy = 190
+    b.append(T(ox, zy, "BUTIRAN (ZOOM 2×, arah bila dipakai)", 5, 700, "#222"))
+    for i, kind in enumerate(("logo", "flag")):
+        x = ox + i * 70
+        b.append(f'<g transform="translate({x},{zy+6})"><svg width="50" height="110" viewBox="0 {FEAT_V-7} 25 55"><use href="#s_{kind}"/></svg>'
+                 f'<rect width="50" height="110" fill="none" stroke="#999" stroke-width="0.3"/></g>')
+        b.append(T(x + 25, zy + 123, "Tali kiri" if kind == "logo" else "Tali kanan", 3.6, 600, "#555", "middle"))
+    sx = 230
+    specs = [("Saiz siap", "25mm × 1000mm (fail artwork ada 2mm bleed setiap sisi = 1004 × 29mm)"),
+             ("Kaedah", "Sublimation, cetak penuh 2 belah (depan & belakang berbeza)"),
+             ("Bendera", f"Satu tali sahaja, {FEAT_V:.0f}mm dari lipatan tengah (paras kolar)"),
+             ("Logo", "Tali sebelah, sama paras dengan bendera, atas panel krim"),
+             ("Hujung", "30mm setiap hujung masuk ke tab kulit PU hijau (#7E9435) dijahit"),
+             ("Aksesori", "Cangkuk lobster besi warna emas + pemegang kad PVC"),
+             ("Pilihan", "Tab kulit boleh di-emboss logo Azzuha (seperti rujukan)"),
+             ("Kuantiti", "______ PCS")]
     yy = zy + 2
     for a, c in specs:
-        b.append(f'<text x="{sx}" y="{yy+6}" font-family="{FONT}" font-size="4" font-weight="700" fill="#76963A">{a.upper()}</text>')
-        b.append(f'<text x="{sx+28}" y="{yy+6}" font-family="{FONT}" font-size="4.4" fill="#333">{html.escape(c)}</text>')
+        b.append(T(sx, yy + 6, a.upper(), 4, 700, "#76963A"))
+        b.append(T(sx + 26, yy + 6, c, 4.4, 400, "#333"))
         yy += 10
-    # swatches
-    sw = [("Latar", p["bg"]), ("Bunga putih", p["f_white"]), ("Biru tua", p["f_navy"] if u == "A" else p["center_peach"]),
-          ("Biru muda", p["f_blue"]), ("Pic", p["leaf_peach"]), ("Bingkai emas", p["trim"]), ("Logo hijau", "#76963A"),
-          ("Logo kelabu", "#555555"), ("Merah bendera", "#CC0001"), ("Biru bendera", "#010066"), ("Kuning bendera", "#FFCC00")]
+    sw = [("Latar", P["bg"]), ("Bunga putih", P["white"]), ("Biru tua", P["navy"]), ("Biru muda", P["blue"]),
+          ("Pic", P["peach"]), ("Pic cerah", P["peach_l"]), ("Batang krim", P["cream"]), ("Tab kulit", P["leather"]),
+          ("Logo hijau", "#76963A"), ("Logo kelabu", "#555555"), ("Merah bendera", "#CC0001"), ("Biru bendera", "#010066"),
+          ("Kuning bendera", "#FFCC00")]
     swx = 900
-    b.append(f'<text x="{swx}" y="{zy}" font-family="{FONT}" font-size="5" font-weight="700" fill="#222">WARNA (HEX)</text>')
+    b.append(T(swx, zy, "WARNA (HEX)", 5, 700, "#222"))
     for i, (n, c) in enumerate(sw):
-        yy = zy + 5 + i * 10
-        b.append(f'<rect x="{swx}" y="{yy}" width="12" height="7" fill="{c}" stroke="#bbb" stroke-width="0.2"/>')
-        b.append(f'<text x="{swx+15}" y="{yy+5}" font-family="{FONT}" font-size="3.8" fill="#333">{n}  {c.upper()}</text>')
-    b.append(f'<text x="{ox}" y="{H_-12}" font-family="{FONT}" font-size="3.6" fill="#888">Nota kepada pencetak: sila hantar sampel digital / proof warna sebelum produksi. Logo dalam fail adalah vektor. Bendera Malaysia ikut nisbah rasmi 1:2.</text>')
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W_}mm" height="{H_}mm" viewBox="0 0 {W_} {H_}">{"".join(b)}</svg>', W_, H_
+        yy = zy + 5 + i * 9
+        b.append(f'<rect x="{swx}" y="{yy}" width="12" height="6.5" fill="{c}" stroke="#bbb" stroke-width="0.2"/>')
+        b.append(T(swx + 15, yy + 4.8, f"{n}  {c.upper()}", 3.8))
+    b.append(T(ox, H_ - 8, "Nota kepada pencetak: sila hantar proof warna sebelum produksi. Logo dalam fail adalah vektor.", 3.6, 400, "#888"))
+    return svgdoc(W_, H_, "".join(b)), W_, H_
 
 
-def artwork(u, side, bleed=2.0):
-    p = PALETTES[u]
+def artwork(side, bleed=2.0):
     w, h = W_STRIP + 2 * bleed, H + 2 * bleed
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}mm" height="{h}mm" viewBox="{-bleed} {-bleed} {w} {h}">'
-           f'{shared_defs(p, u)}{strip(p, side, u, bleed)}</svg>')
+           f'{doc_defs()}{strip(side, "", bleed)}</svg>')
     return svg, w, h
 
 
-# ------------------------------------------------ run
-hero("A", "01_Mockup_Pilihan_A", "Pilihan A — Hijau Zaitun Floral")
-compare()
-# presentation layout sheet (A)
-svg, w, h = layout_sheet("A")
-jobs.append({"in": write("layoutA_png", page(svg.replace(f'width="{w}mm" height="{h}mm"', f'width="{w*3.5}" height="{h*3.5}"'), w*3.5, h*3.5)),
-             "out": f"{OUT}/presentation/02_Layout_Reka_Bentuk_A.png", "w": int(w*3.5), "h": int(h*3.5), "scale": 1})
-hero("B", "04_Mockup_Pilihan_B", "Pilihan B — Hijau Zamrud Floral")
-
-for u in "AB":
-    d = f"{OUT}/print/Pilihan_{u}"
-    svg, w, h = layout_sheet(u)
-    open(f"{d}/Azzuha_Lanyard_{u}_Layout.svg", "w").write(svg)
-    jobs.append({"in": write(f"layout{u}", page(svg, w, h, "mm")), "out": f"{WORK}/p_{u}_1.pdf", "w": w, "h": h, "unit": "mm"})
-    for i, side in enumerate(("front", "back")):
-        svg, w, h = artwork(u, side)
-        nm = "Depan" if side == "front" else "Belakang"
-        open(f"{d}/Azzuha_Lanyard_{u}_{nm}_1000x25mm.svg", "w").write(svg)
-        jobs.append({"in": write(f"art{u}{side}", page(svg, w, h, "mm", PALETTES[u]["bg"])), "out": f"{WORK}/p_{u}_{i+2}.pdf", "w": w, "h": h, "unit": "mm"})
-        # 300 dpi PNG: 1mm = 11.811 px ; css px per mm = 3.7795 -> scale 3.125
-        jobs.append({"in": write(f"art{u}{side}", page(svg, w, h, "mm")), "out": f"{d}/Azzuha_Lanyard_{u}_{nm}_300dpi.png", "w": w, "h": h, "unit": "mm", "scale": 3.125})
-
+hero()
+closeup()
+svg, w, h = layout_sheet()
+S = 3.5
+jobs.append({"in": write("layout_png", page(svg.replace(f'width="{w}" height="{h}"', f'width="{w*S}" height="{h*S}"', 1), w*S, h*S)),
+             "out": f"{OUT}/presentation/02_Layout_Reka_Bentuk.png", "w": int(w*S), "h": int(h*S), "scale": 1})
+d = f"{OUT}/print"
+mm_svg = svg.replace(f'width="{w}" height="{h}"', f'width="{w}mm" height="{h}mm"', 1)
+open(f"{d}/Azzuha_Lanyard_Layout.svg", "w").write(mm_svg)
+jobs.append({"in": write("layout", page(mm_svg, w, h, "mm")), "out": f"{WORK}/p_1.pdf", "w": w, "h": h, "unit": "mm"})
+for i, side in enumerate(("front", "back")):
+    svg, w, h = artwork(side)
+    nm = "Depan" if side == "front" else "Belakang"
+    open(f"{d}/Azzuha_Lanyard_{nm}_1000x25mm.svg", "w").write(svg)
+    pth = write(f"art{side}", page(svg, w, h, "mm", P["bg"]))
+    jobs.append({"in": pth, "out": f"{WORK}/p_{i+2}.pdf", "w": w, "h": h, "unit": "mm"})
+    jobs.append({"in": pth, "out": f"{d}/Azzuha_Lanyard_{nm}_300dpi.png", "w": w, "h": h, "unit": "mm", "scale": 3.125})
 json.dump(jobs, open(f"{WORK}/jobs.json", "w"), indent=1)
 print(len(jobs), "jobs")

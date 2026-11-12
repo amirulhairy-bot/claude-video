@@ -1,214 +1,186 @@
-"""Azzuha lanyard artwork generator. All units in mm unless noted."""
-import math, random, re
+"""Azzuha lanyard artwork generator (v2). All units in mm.
 
-W_STRIP, H = 1000.0, 25.0          # finished size
-HALF = W_STRIP / 2
-TILE = 50.0                         # pattern repeat along strip
+Strand frame: 25 wide (u) x 500 long (v); v=0 is the back of the neck (fold), v=500 is the hook end.
+Flat strip 1000 x 25: right half = strand rotated -90 (neck at x=500), left half = strand rotated +90.
+"""
+import math, random, re, os
 
-PALETTES = {
-    "A": dict(name="Hijau Zaitun Floral", bg="#6F7C34", bg2="#66732F", vine="#E4D9B0", vine2="#2E3A66",
-              f_white="#F6F0DE", f_white_s="#A9BCD3", f_navy="#2C3866", f_blue="#9DB7D8",
-              center_peach="#EDB98F", leaf_peach="#E9B68D", leaf_blue="#86A3CB", panel="#FFFDF5",
-              trim="#D9C489"),
-    "B": dict(name="Hijau Zamrud Floral", bg="#2F4A2E", bg2="#2A4329", vine="#E4D9B0", vine2="#9DB7D8",
-              f_white="#F6F0DE", f_white_s="#A9BCD3", f_navy="#E9B68D", f_blue="#9DB7D8",
-              center_peach="#2C3866", leaf_peach="#8DB04F", leaf_blue="#86A3CB", panel="#FFFDF5",
-              trim="#D9C489"),
-}
+W_STRIP, H = 1000.0, 25.0
+HALF = 500.0
+TILE = 80.0                         # pattern repeat along the strand
+
+P = dict(bg="#74833A", bg_dark="#5F6D2C",
+         navy="#2B3463", navy2="#4A5C8F", white="#F4EFE0", white_s="#7F98BA", yellow="#E9CB8E",
+         blue="#A8C0DD", blue_s="#6F8CB5", peach="#EDB48C", peach_d="#C9835C", peach_l="#F3CFA8",
+         cream="#E6DCB4", panel="#FBF7EC", leather="#7E9435")
 
 LOGO_W, LOGO_H = 288.0, 179.0
-_logo = open(__file__.rsplit('/', 1)[0] + '/logo.svg').read()
+_logo = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo.svg')).read()
 LOGO_PATHS = "".join(re.findall(r'<path[^>]*/>', _logo))
+
+# feature placement (strand frame)
+FEAT_V = 140.0      # start of flag / logo block, mm from the neck fold
+FLAG_LEN = 41.0
+PANEL_LEN = 30.0
 
 
 def logo(x, y, h):
-    """Azzuha logo, top-left at (x,y), height h mm. Returns (svg, width)."""
     s = h / LOGO_H
     return f'<g transform="translate({x:.3f},{y:.3f}) scale({s:.5f})">{LOGO_PATHS}</g>', LOGO_W * s
 
 
-def petal_flower(n, r, fill, stroke, center, cdot=None, pr=0.55):
-    out = []
-    for i in range(n):
-        a = 360 / n * i
-        out.append(f'<ellipse cx="0" cy="{-r*0.55:.3f}" rx="{r*pr*0.62:.3f}" ry="{r*0.55:.3f}" '
-                   f'transform="rotate({a:.1f})" fill="{fill}"'
-                   + (f' stroke="{stroke}" stroke-width="0.12"' if stroke else '') + '/>')
-    out.append(f'<circle r="{r*0.26:.3f}" fill="{center}"/>')
-    if cdot:
-        out.append(f'<circle r="{r*0.11:.3f}" fill="{cdot}"/>')
-    return "".join(out)
+def petal(l, w):
+    return f'M0,0 C{-w:.2f},{-l*0.3:.2f} {-w:.2f},{-l:.2f} 0,{-l:.2f} C{w:.2f},{-l:.2f} {w:.2f},{-l*0.3:.2f} 0,0Z'
 
 
-def leaf(L, fill):
-    return (f'<path d="M0,0 C{L*0.35:.2f},{-L*0.32:.2f} {L*0.8:.2f},{-L*0.22:.2f} {L:.2f},0 '
-            f'C{L*0.8:.2f},{L*0.22:.2f} {L*0.35:.2f},{L*0.32:.2f} 0,0Z" fill="{fill}"/>')
+def flower(n, l, w, fill, stroke=None, sw=0.14, rot0=0):
+    d = petal(l, w)
+    st = f' stroke="{stroke}" stroke-width="{sw}"' if stroke else ''
+    return "".join(f'<path d="{d}" transform="rotate({rot0 + 360/n*i:.1f})" fill="{fill}"{st}/>' for i in range(n))
 
 
-def defs(p):
-    return f'''
-<g id="fW">{petal_flower(5, 2.1, p["f_white"], p["f_white_s"], p["f_navy"], p["center_peach"])}</g>
-<g id="fN">{petal_flower(6, 1.9, p["f_navy"], None, p["center_peach"])}</g>
-<g id="fB">{petal_flower(5, 1.5, p["f_blue"], None, p["f_white"])}</g>
-<g id="fS">{petal_flower(5, 0.9, p["f_white"], None, p["center_peach"])}</g>
-<g id="lP">{leaf(2.6, p["leaf_peach"])}</g>
-<g id="lB">{leaf(2.0, p["leaf_blue"])}</g>
-<g id="lW">{leaf(1.6, p["f_white"])}</g>
-<g id="lN">{leaf(1.8, p["f_navy"])}</g>
-<g id="dot"><circle r="0.45" fill="{p["center_peach"]}"/><circle cx="0.9" cy="0.5" r="0.3" fill="{p["f_white"]}"/><circle cx="-0.6" cy="0.8" r="0.3" fill="{p["f_white"]}"/></g>
-'''
+def leaf(L, wd, fill, stroke=None, curve=0.25):
+    st = f' stroke="{stroke}" stroke-width="0.12"' if stroke else ''
+    return (f'<path d="M0,0 C{L*0.3:.2f},{-L*wd:.2f} {L*0.75:.2f},{-L*(wd-curve*0.5):.2f} {L:.2f},{-L*curve:.2f} '
+            f'C{L*0.7:.2f},{L*(wd*0.6-curve):.2f} {L*0.3:.2f},{L*wd*0.7:.2f} 0,0Z" fill="{fill}"{st}/>')
 
 
-def tile(p, seed=7):
-    """One seamless (in x) tile, TILE x H, returned as svg string (may overflow edges, wraps in x)."""
+def defs(ns=""):
+    p = P
+    g = {
+        "fN": flower(6, 2.4, 1.35, p["navy"]) + flower(6, 1.35, 0.7, p["navy2"], rot0=30)
+              + f'<circle r="0.85" fill="{p["peach"]}"/><circle r="0.35" fill="{p["navy"]}"/>',
+        "fW": flower(6, 2.2, 1.15, p["white"], p["white_s"]) + f'<circle r="0.75" fill="{p["yellow"]}"/>'
+              + "".join(f'<circle cx="{0.42*math.cos(a):.2f}" cy="{0.42*math.sin(a):.2f}" r="0.12" fill="{p["navy"]}"/>'
+                        for a in [i*math.pi/3 for i in range(6)]),
+        "fB": flower(5, 1.55, 0.9, p["blue"], p["blue_s"], 0.1) + f'<circle r="0.45" fill="{p["white"]}"/>',
+        "fP": flower(5, 1.3, 0.8, p["peach"], p["peach_d"], 0.08) + f'<circle r="0.35" fill="{p["peach_d"]}"/>',
+        "st": flower(4, 1.9, 0.7, p["peach_l"], p["peach_d"], 0.1, rot0=45) + f'<circle r="0.4" fill="{p["white"]}"/>',
+        # acanthus / tulip spray
+        "sp": (f'<path d="M0,0 C-0.6,-1.2 -0.9,-2.6 0,-3.8 C0.9,-2.6 0.6,-1.2 0,0Z" fill="{p["peach_l"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
+               f'<path d="M0,0 C-1.2,-0.6 -2.6,-1.2 -2.8,-2.9 C-1.4,-2.4 -0.6,-1.4 0,0Z" fill="{p["peach"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
+               f'<path d="M0,0 C1.2,-0.6 2.6,-1.2 2.8,-2.9 C1.4,-2.4 0.6,-1.4 0,0Z" fill="{p["peach"]}" stroke="{p["peach_d"]}" stroke-width="0.12"/>'
+               f'<path d="M0,0.1 L0,1.6" stroke="{p["cream"]}" stroke-width="0.25"/>'),
+        "lN": leaf(2.6, 0.32, p["navy"]),
+        "lB": leaf(2.3, 0.3, p["blue"], p["blue_s"]),
+        "lP": leaf(2.4, 0.34, p["peach"], p["peach_d"]),
+        "lC": leaf(1.7, 0.3, p["cream"]),
+        "lD": leaf(2.6, 0.3, p["bg_dark"]),
+        "dt": f'<circle r="0.4" fill="{p["peach"]}"/><circle cx="0.9" cy="0.4" r="0.28" fill="{p["white"]}"/><circle cx="-0.5" cy="0.85" r="0.28" fill="{p["blue"]}"/>',
+    }
+    return "".join(f'<g id="{ns}{k}">{v}</g>' for k, v in g.items())
+
+
+def tile(ns="", seed=11):
+    """One tile in strand frame: u in [0,25], v in [0,TILE), seamless in v."""
     rnd = random.Random(seed)
-    # poisson-ish placement of flowers
-    pts = []
+    U0, U1 = -1.0, 26.0
+
+    def vd(a, b):
+        d = abs(a - b) % TILE
+        return min(d, TILE - d)
+
+    major = []
     tries = 0
-    while len(pts) < 24 and tries < 4000:
+    while tries < 6000:
         tries += 1
-        x, y = rnd.uniform(0, TILE), rnd.uniform(1.5, H - 1.5)
-        ok = True
-        for (px, py, _) in pts:
-            dx = min(abs(x - px), TILE - abs(x - px))
-            if dx * dx + (y - py) ** 2 < 5.6 ** 2:
-                ok = False; break
-        if ok:
-            pts.append((x, y, rnd.choice(["fW", "fW", "fN", "fB", "fB", "fW"])))
-    els_vine, els_leaf, els_fl = [], [], []
-    # vines: connect each flower to its nearest neighbour with a curl
-    for i, (x, y, k) in enumerate(pts):
-        best = None
-        for j, (qx, qy, _) in enumerate(pts):
-            if j == i: continue
-            dx = qx - x
-            if dx > TILE / 2: dx -= TILE
-            if dx < -TILE / 2: dx += TILE
-            d = math.hypot(dx, qy - y)
-            if best is None or d < best[0]: best = (d, dx, qy - y)
-        _, dx, dy = best
-        bend = rnd.uniform(-0.6, 0.6)
-        mx, my = x + dx / 2 - dy * bend, y + dy / 2 + dx * bend
-        els_vine.append(f'M{x:.2f},{y:.2f} Q{mx:.2f},{my:.2f} {x+dx:.2f},{y+dy:.2f}')
-        # small curl + leaves along the vine
-        for t in (0.25, 0.5, 0.75):
-            lx = (1 - t) ** 2 * x + 2 * (1 - t) * t * mx + t * t * (x + dx)
-            ly = (1 - t) ** 2 * y + 2 * (1 - t) * t * my + t * t * (y + dy)
-            ang = rnd.uniform(0, 360)
-            els_leaf.append((lx, ly, rnd.choice(["lP", "lP", "lB", "lW", "lN"]), ang))
-        cx, cy = mx + rnd.uniform(-2, 2), my + rnd.uniform(-2, 2)
-        r = rnd.uniform(0.9, 1.5)
-        els_vine.append(f'M{mx:.2f},{my:.2f} q{r:.2f},{-r*1.4:.2f} {r*2:.2f},0 t{-r*0.9:.2f},{r*0.8:.2f}')
-    for (x, y, k) in pts:
-        els_fl.append((x, y, k, rnd.uniform(0, 72)))
-    # tiny filler dots / small flowers
-    for _ in range(26):
-        x, y = rnd.uniform(0, TILE), rnd.uniform(1, H - 1)
-        els_fl.append((x, y, rnd.choice(["fS", "fS", "lW", "lP", "dot"]), rnd.uniform(0, 360)))
+        u, v = rnd.uniform(U0, U1), rnd.uniform(0, TILE)
+        if all(math.hypot(u - pu, vd(v, pv)) > 4.6 for pu, pv, _, _ in major):
+            major.append((u, v, rnd.choices(["fW", "fN", "fB", "fP"], [5, 2, 4, 1])[0], rnd.uniform(0.68, 0.95)))
+    minor = []
+    tries = 0
+    while tries < 8000:
+        tries += 1
+        u, v = rnd.uniform(U0, U1), rnd.uniform(0, TILE)
+        if all(math.hypot(u - pu, vd(v, pv)) > 3.0 for pu, pv, _, _ in major) and \
+           all(math.hypot(u - pu, vd(v, pv)) > 2.4 for pu, pv, _, _, _ in minor):
+            minor.append((u, v, rnd.choices(["sp", "lN", "lB", "lP", "lC", "st", "fB", "dt", "lD"],
+                                            [4, 2, 3, 3, 2, 2, 2, 1, 2])[0], rnd.uniform(0, 360), rnd.uniform(0.7, 1.0)))
+    # stems
+    stems = []
+    for u, v, _, _ in major:
+        for _ in range(2):
+            a = rnd.uniform(0, 2 * math.pi); L = rnd.uniform(3.0, 5.0)
+            eu, ev = u + L * math.cos(a), v + L * math.sin(a)
+            cu, cv = (u + eu) / 2 + rnd.uniform(-2, 2), (v + ev) / 2 + rnd.uniform(-2, 2)
+            r = rnd.uniform(0.6, 1.1)
+            stems.append(f'M{u:.2f},{v:.2f} Q{cu:.2f},{cv:.2f} {eu:.2f},{ev:.2f} q{r:.2f},{-r:.2f} {r*1.6:.2f},{r*0.2:.2f}')
+    stems_b = []
+    for u, v, _, _ in major[::3]:
+        a = rnd.uniform(0, 2 * math.pi); L = rnd.uniform(3, 5)
+        stems_b.append(f'M{u:.2f},{v:.2f} q{L*math.cos(a+0.6):.2f},{L*math.sin(a+0.6):.2f} {L*math.cos(a):.2f},{L*math.sin(a):.2f}')
 
-    def wrap(fn):
-        out = []
-        for off in (-TILE, 0, TILE):
-            out.append(f'<g transform="translate({off},0)">{fn()}</g>')
-        return "".join(out)
-
-    vines = lambda: (f'<path d="{" ".join(els_vine)}" fill="none" stroke="{p["vine"]}" stroke-width="0.32" '
-                     f'stroke-linecap="round" opacity="0.9"/>')
-    leaves = lambda: "".join(f'<use href="#{k}" transform="translate({x:.2f},{y:.2f}) rotate({a:.0f})"/>'
-                             for x, y, k, a in els_leaf)
-    flowers = lambda: "".join(f'<use href="#{k}" transform="translate({x:.2f},{y:.2f}) rotate({a:.0f})"/>'
-                              for x, y, k, a in els_fl)
-    return wrap(vines) + wrap(leaves) + wrap(flowers)
+    def body():
+        s = [f'<path d="{" ".join(stems)}" fill="none" stroke="{P["cream"]}" stroke-width="0.3" stroke-linecap="round"/>',
+             f'<path d="{" ".join(stems_b)}" fill="none" stroke="{P["blue_s"]}" stroke-width="0.25" stroke-linecap="round"/>']
+        s += [f'<use href="#{ns}{k}" transform="translate({u:.2f},{v:.2f}) rotate({a:.0f}) scale({sc:.2f})"/>' for u, v, k, a, sc in minor]
+        s += [f'<use href="#{ns}{k}" transform="translate({u:.2f},{v:.2f}) rotate({rnd2:.0f}) scale({sc:.2f})"/>'
+              for (u, v, k, sc), rnd2 in zip(major, [((i * 37) % 72) for i in range(len(major))])]
+        return "".join(s)
+    b = body()
+    return "".join(f'<g transform="translate(0,{off})">{b}</g>' for off in (-TILE, 0, TILE))
 
 
-def flag(x, y, w):
-    """Jalur Gemilang, 1:2, top-left (x,y), width w."""
-    h = w / 2
-    s = h / 14.0  # stripe unit
-    o = [f'<g transform="translate({x:.3f},{y:.3f})">']
-    for i in range(14):
-        o.append(f'<rect x="0" y="{i*s:.4f}" width="{w:.4f}" height="{s+0.02:.4f}" fill="{"#CC0001" if i%2==0 else "#FFFFFF"}"/>')
-    cw, ch = w / 2, 8 * s
-    o.append(f'<rect width="{cw:.4f}" height="{ch:.4f}" fill="#010066"/>')
-    u = ch / 8  # canton unit (canton = 14 x 8 units horizontally scaled)
-    ux = cw / 14
-    # crescent
-    cx, cy = 5.6 * ux, 4 * u
-    R = 3.0 * u; r = 2.6 * u
-    o.append(f'<mask id="cm{x:.0f}{y:.0f}"><rect width="{cw}" height="{ch}" fill="#fff"/>'
-             f'<circle cx="{cx + 0.75*u:.4f}" cy="{cy:.4f}" r="{r:.4f}" fill="#000"/></mask>')
-    o.append(f'<circle cx="{cx:.4f}" cy="{cy:.4f}" r="{R:.4f}" fill="#FFCC00" mask="url(#cm{x:.0f}{y:.0f})"/>')
-    # 14-point star
-    sx, sy = cx + 4.9 * u, cy
-    Ro, Ri = 2.35 * u, 1.05 * u
+def flag_vertical(y0):
+    """Stylised Jalur Gemilang for a hanging strap (as reference photo): blue canton across the strap with
+    crescent & 14-point star, red/white stripes below. Strand frame, starts at v=y0, spans u -3..28 (bleed)."""
+    o = []
+    ch = 20.0
+    o.append(f'<rect x="-3" y="{y0}" width="31" height="{ch}" fill="#010066"/>')
+    stripes = ["#CC0001", "#FFFFFF"] * 3
+    sh = (FLAG_LEN - ch) / len(stripes)
+    for i, c in enumerate(stripes):
+        o.append(f'<rect x="-3" y="{y0+ch+i*sh:.3f}" width="31" height="{sh+0.03:.3f}" fill="{c}"/>')
+    cx, cy = 8.0, y0 + ch / 2
+    o.append(f'<circle cx="{cx}" cy="{cy}" r="6.2" fill="#FFCC00"/>')
+    o.append(f'<circle cx="{cx+1.5}" cy="{cy}" r="5.3" fill="#010066"/>')
+    sx = 18.6
     pts = []
     for i in range(28):
         a = -math.pi / 2 + i * math.pi / 14
-        rr = Ro if i % 2 == 0 else Ri
-        pts.append(f"{sx + rr*math.cos(a):.4f},{sy + rr*math.sin(a):.4f}")
+        rr = 4.7 if i % 2 == 0 else 2.0
+        pts.append(f"{sx + rr*math.cos(a):.3f},{cy + rr*math.sin(a):.3f}")
     o.append(f'<polygon points="{" ".join(pts)}" fill="#FFCC00"/>')
-    o.append('</g>')
     return "".join(o)
 
 
-# --- layout of one half, neck (x=0) -> hook end (x=500), flag top edge at y=0 ---
-FLAG_X, FLAG_W = 175.0, 50.0
-PANEL_X, PANEL_W = 236.0, 50.0
+def logo_panel(y0):
+    """Azzuha logo panel across the strap, centred on the flag block."""
+    v0 = y0 + (FLAG_LEN - PANEL_LEN) / 2
+    lw = 21.5
+    lh = lw * LOGO_H / LOGO_W
+    lg, _ = logo(0, 0, lh)
+    return (f'<rect x="-3" y="{v0}" width="31" height="{PANEL_LEN}" fill="{P["panel"]}"/>'
+            f'<rect x="-3" y="{v0}" width="31" height="0.7" fill="{P["peach"]}"/>'
+            f'<rect x="-3" y="{v0+PANEL_LEN-0.7}" width="31" height="0.7" fill="{P["peach"]}"/>'
+            f'<g transform="translate({(25-lw)/2:.3f},{v0 + (PANEL_LEN-lh)/2:.3f})">{lg}</g>')
 
 
-def half_front(p, uid):
-    o = [f'<rect x="0" y="-6" width="{HALF+6}" height="{H+12}" fill="{p["bg"]}"/>']
-    for i in range(int(HALF // TILE) + 1):
-        o.append(f'<use href="#tile{uid}" x="{i*TILE}"/>')
-    # flag block with trim
-    tr = p["trim"]
-    o.append(f'<rect x="{FLAG_X-1.2}" y="0" width="{FLAG_W+2.4}" height="{H}" fill="{tr}"/>')
-    o.append(flag(FLAG_X, 0, FLAG_W))
-    # logo panel
-    o.append(f'<rect x="{PANEL_X}" y="1.6" width="{PANEL_W}" height="{H-3.2}" rx="2.2" fill="{p["panel"]}" '
-             f'stroke="{tr}" stroke-width="0.7"/>')
-    lh = 17.5
-    lg, lw = logo(0, 0, lh)
-    o.append(f'<g transform="translate({PANEL_X + (PANEL_W-lw)/2:.3f},{(H-lh)/2 + 0.2:.3f})">{lg}</g>')
+def strand(kind, ns=""):
+    """kind: 'flag' | 'logo' | 'plain'. Strand art, u -3..28, v 0..503."""
+    o = [f'<rect x="-3" y="-3" width="31" height="509" fill="{P["bg"]}"/>']
+    for i in range(int(503 // TILE) + 1):
+        o.append(f'<use href="#{ns}tile" y="{i*TILE}"/>')
+    if kind == "flag":
+        o.append(flag_vertical(FEAT_V))
+    elif kind == "logo":
+        o.append(logo_panel(FEAT_V))
     return "".join(o)
 
 
-def half_back(p, uid):
-    o = [f'<rect x="0" y="-6" width="{HALF+6}" height="{H+12}" fill="{p["bg"]}"/>']
-    for i in range(int(HALF // TILE) + 1):
-        o.append(f'<use href="#tile{uid}" x="{i*TILE}"/>')
-    return "".join(o)
+def doc_defs(ns=""):
+    """Everything referenced: motifs, tile, three strand variants."""
+    return (f'<defs>{defs(ns)}<g id="{ns}tile">{tile(ns)}</g>'
+            f'<clipPath id="{ns}sc"><rect x="-3" y="0" width="31" height="506"/></clipPath>'
+            + "".join(f'<g id="{ns}s_{k}"><g clip-path="url(#{ns}sc)">{strand(k, ns)}</g></g>' for k in ("flag", "logo", "plain"))
+            + '</defs>')
 
 
-def strip(p, side="front", uid="A", bleed=0.0):
-    """Full 1000 x 25 strip group. Origin at top-left of finished size. Right half = artwork as designed,
-    left half = rotated 180 so both arms read the same way when hanging."""
-    hf = half_front if side == "front" else half_back
-    hid = f"half{side}{uid}"
-    cid = f"clip{side}{uid}"
-    return f'''<defs><clipPath id="{cid}"><rect x="{-bleed}" y="{-bleed}" width="{W_STRIP+2*bleed}" height="{H+2*bleed}"/></clipPath>
-<clipPath id="h{cid}"><rect x="0" y="-6" width="{HALF+6}" height="{H+12}"/></clipPath>
-<g id="{hid}"><g clip-path="url(#h{cid})">{hf(p, uid)}</g></g></defs>
-<g clip-path="url(#{cid})">
-<rect x="{-bleed-1}" y="{-bleed-1}" width="{W_STRIP+2*bleed+2}" height="{H+2*bleed+2}" fill="{p["bg"]}"/>
-<use href="#{hid}" x="{HALF}"/>
-<use href="#{hid}" transform="rotate(180 {HALF/2} {H/2})"/>
-</g>'''
-
-
-def shared_defs(p, uid):
-    """defs needed once per document per palette"""
-    return f'<defs>{defs_ns(p, uid)}<g id="tile{uid}">{tile_ns(p, uid)}</g></defs>'
-
-
-def defs_ns(p, uid):
-    return defs(p).replace('id="', f'id="{uid}_')
-
-
-def tile_ns(p, uid):
-    return tile(p).replace('href="#', f'href="#{uid}_')
-
-
-def strand_vertical(uid, side="front"):
-    """Return svg <use> of the right half rotated so neck is at top, hook end at bottom (25 wide x 500 tall)."""
-    return f'<use href="#half{side}{uid}" transform="translate(25,0) rotate(90)"/>'
+def strip(side="front", ns="", bleed=0.0):
+    """Flat 1000 x 25 strip (origin at finished top-left). front: left half = logo strand, right half = flag strand."""
+    L, R = ("logo", "flag") if side == "front" else ("plain", "plain")
+    cid = f"{ns}{side}clip{int(bleed*10)}"
+    return (f'<defs><clipPath id="{cid}L"><rect x="{-bleed}" y="{-bleed}" width="{HALF+bleed}" height="{H+2*bleed}"/></clipPath>'
+            f'<clipPath id="{cid}R"><rect x="{HALF}" y="{-bleed}" width="{HALF+bleed}" height="{H+2*bleed}"/></clipPath></defs>'
+            f'<g clip-path="url(#{cid}R)"><use href="#{ns}s_{R}" transform="translate({HALF},{H}) rotate(-90)"/></g>'
+            f'<g clip-path="url(#{cid}L)"><use href="#{ns}s_{L}" transform="translate({HALF},0) rotate(90)"/></g>')
