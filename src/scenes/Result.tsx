@@ -1,13 +1,13 @@
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Airport, SpeedLines} from '../components/Airport';
-import {Rider} from '../components/Rider';
+import {Rider, RIDER_GROUND, RIDER_VB} from '../components/Rider';
 import {Chip, Headline} from '../components/Text';
 import {Sfx} from '../components/Sfx';
 import {SAFE_BOX} from '../config';
 
-export const RW = 760;
-export const RH = (RW * 580) / 560;
-export const RTOP = 1280 - ((606 - 40) / 580) * RH;
+export const RW = 480;
+export const RH = (RW * RIDER_VB.h) / RIDER_VB.w;
+export const RTOP = 1280 - ((RIDER_GROUND - RIDER_VB.y) / RIDER_VB.h) * RH;
 
 export const RiderOnAirport: React.FC<{frame: number; enter?: boolean}> = ({frame, enter = true}) => {
   const {fps} = useVideoConfig();

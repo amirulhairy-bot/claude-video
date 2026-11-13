@@ -1,5 +1,5 @@
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Se3s} from '../components/Bags';
+import {Se3s, SE3S_VB} from '../components/Bags';
 import {Logo} from '../components/Logo';
 import {Headline} from '../components/Text';
 import {Sfx} from '../components/Sfx';
@@ -21,11 +21,11 @@ export const Versus: React.FC = () => {
   const nameS = spring({frame: frame - 70, fps, config: {damping: 12}});
   const glow = interpolate(frame, [34, 44, 165], [0, 1, 0.75], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const shake = frame >= 40 && frame < 48 ? Math.sin(frame * 4) * 14 : 0;
-  const bagW = 760;
-  const bagH = (bagW * 420) / 560;
+  const bagW = 600;
+  const bagH = (bagW * SE3S_VB.h) / SE3S_VB.w;
 
   return (
-    <AbsoluteFill style={{background: 'radial-gradient(circle at 50% 45%, #2a3550 0%, #0c0f18 70%)', transform: `translateY(${shake}px)`}}>
+    <AbsoluteFill style={{background: `radial-gradient(circle at 50% 45%, ${BRAND.brand} 0%, #0b1426 72%)`, transform: `translateY(${shake}px)`}}>
       {/* sinar berputar */}
       <AbsoluteFill style={{opacity: glow * 0.5, transform: `rotate(${frame * 0.6}deg) scale(2)`}}>
         <div
@@ -53,7 +53,7 @@ export const Versus: React.FC = () => {
         style={{
           position: 'absolute',
           left: SAFE_BOX.x + (SAFE_BOX.w - bagW) / 2,
-          top: 470 + (1 - drop) * -1100,
+          top: 420 + (1 - drop) * -1100,
           width: bagW,
           height: bagH,
           transform: `scale(${0.85 + 0.15 * drop}) rotate(${(1 - drop) * -12}deg)`,
@@ -68,7 +68,7 @@ export const Versus: React.FC = () => {
           position: 'absolute',
           left: SAFE_BOX.x,
           width: SAFE_BOX.w,
-          top: 1050,
+          top: 1068,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -76,9 +76,9 @@ export const Versus: React.FC = () => {
           opacity: nameS,
         }}
       >
-        <div style={{display: 'flex', alignItems: 'center', gap: 22, background: 'rgba(255,255,255,0.08)', padding: '10px 26px', borderRadius: 18, border: '2px solid rgba(255,255,255,0.2)'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: 22, background: BRAND.brand, padding: '12px 26px', borderRadius: 18, border: '3px solid rgba(255,255,255,0.35)', boxShadow: '0 10px 30px rgba(0,0,0,0.4)'}}>
           <Logo height={44} />
-          <span style={{fontFamily: FONT, fontWeight: 800, fontSize: 44, color: BRAND.bagAccent}}>SE3S</span>
+          <span style={{fontFamily: FONT, fontWeight: 800, fontSize: 40, color: 'white'}}>Sewa SE3S</span>
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export const Versus: React.FC = () => {
         const s = spring({frame: frame - f.at, fps, config: {damping: 12, stiffness: 200}});
         if (frame < f.at) return null;
         return (
-          <div key={i} style={{position: 'absolute', left: SAFE_BOX.x, width: SAFE_BOX.w, top: 1160 + i * 88, display: 'flex', justifyContent: 'center'}}>
+          <div key={i} style={{position: 'absolute', left: SAFE_BOX.x, width: SAFE_BOX.w, top: 1166 + i * 84, display: 'flex', justifyContent: 'center'}}>
             <div
               style={{
                 transform: `translateX(${(1 - s) * (i % 2 ? 300 : -300)}px)`,

@@ -16,17 +16,20 @@ export const SAFE_BOX = {
 
 export const BRAND = {
   productName: 'Airwheel SE3S',
-  handle: '@airwheel.my', // TODO: tukar ke handle TikTok/IG anda
+  businessName: 'Amsyar Pack Rental',
+  handle: '@amsyarpackrental', // TODO: tukar ke handle TikTok/IG sebenar
   commentKeyword: 'SE3S',
-  // Warna beg — laraskan ikut gambar no. 2
-  bagShell: '#2b2f36',
-  bagShellLight: '#4a515c',
-  bagShellDark: '#16191e',
-  bagAccent: '#f5a623',
-  // Letak fail logo dalam folder public/ (cth: public/logo.png) dan set 'logo.png'.
-  // Jika null, logo teks "AIRWHEEL" digunakan.
-  logoFile: null as string | null,
-  logoText: 'AIRWHEEL',
+  brand: '#4272AF', // biru APR.
+  // Warna beg ikut gambar 1 (Airwheel SE3S hitam, lencana kuning)
+  bagShell: '#2a2c30',
+  bagShellLight: '#4a4d53',
+  bagShellDark: '#141518',
+  bagAccent: '#e3d23c',
+  metal: '#c9ced4',
+  // Logo putih lutsinar dalam public/. Set null untuk guna logo teks.
+  logoFile: 'apr-logo.png' as string | null,
+  logoAspect: 550 / 144,
+  logoText: 'APR.',
 };
 
 // Garis masa (frame @30fps)

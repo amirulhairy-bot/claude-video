@@ -17,67 +17,105 @@ export const OldSuitcase: React.FC = () => (
   </svg>
 );
 
-// Airwheel SE3S — beg pintar boleh ditunggang (pandangan sisi, mod tunggang).
-// Koordinat dalam ruang Rider: badan x 120..520, y 360..560.
+const Wheel: React.FC<{x: number; y: number; r: number; rot: number}> = ({x, y, r, rot}) => (
+  <g transform={`rotate(${rot} ${x} ${y})`}>
+    <circle cx={x} cy={y} r={r} fill="#151515" />
+    <circle cx={x} cy={y} r={r * 0.62} fill="#3a3a3a" />
+    {[0, 72, 144, 216, 288].map((a) => (
+      <rect key={a} x={x - 2.5} y={y - r * 0.6} width={5} height={r * 0.6} fill="#8a8f95" transform={`rotate(${a} ${x} ${y})`} />
+    ))}
+    <circle cx={x} cy={y} r={r * 0.2} fill={BRAND.metal} />
+  </g>
+);
+
+// Airwheel SE3S (ikut gambar 1): beg tegak hitam bertekstur, lencana bulat kuning,
+// rangka aluminium mendatar ke batang pemegang T, roda depan + 2 roda belakang.
+// Koordinat: beg x 150..390, y 220..560; batang x≈560; lantai y≈615. Menghadap kanan.
 export const Se3sBody: React.FC<{wheelRot?: number; shine?: number; handle?: number}> = ({wheelRot = 0, shine = -1, handle = 1}) => {
-  const hx = 505;
-  const top = 365;
+  const poleTop = 560 - 440 * handle;
   return (
     <g>
       <defs>
-        <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor={BRAND.bagShellLight} />
-          <stop offset="0.55" stopColor={BRAND.bagShell} />
+          <stop offset="0.5" stopColor={BRAND.bagShell} />
           <stop offset="1" stopColor={BRAND.bagShellDark} />
+        </linearGradient>
+        <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#8d949c" />
+          <stop offset="0.45" stopColor="#eef1f4" />
+          <stop offset="1" stopColor="#9aa1a9" />
+        </linearGradient>
+        <linearGradient id="metalH" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#eef1f4" />
+          <stop offset="1" stopColor="#8d949c" />
         </linearGradient>
         <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="white" stopOpacity="0" />
-          <stop offset="0.5" stopColor="white" stopOpacity="0.55" />
+          <stop offset="0.5" stopColor="white" stopOpacity="0.5" />
           <stop offset="1" stopColor="white" stopOpacity="0" />
         </linearGradient>
         <clipPath id="bodyClip">
-          <rect x={120} y={360} width={400} height={200} rx={34} />
+          <rect x={150} y={220} width={240} height={340} rx={26} />
         </clipPath>
       </defs>
-      {/* batang pemegang (stereng) */}
+      {/* roda belakang (yang jauh) */}
+      <Wheel x={205} y={590} r={24} rot={wheelRot} />
+      {/* rangka mendatar ke batang */}
+      <rect x={370} y={508} width={200} height={24} rx={6} fill="url(#metalH)" />
+      <rect x={370} y={532} width={200} height={6} fill="#6e747b" />
+      {/* garpu + roda depan */}
+      <rect x={548} y={530} width={22} height={48} rx={6} fill="#2a2a2a" />
+      <Wheel x={562} y={585} r={30} rot={wheelRot} />
+      {/* batang pemegang (teleskopik) */}
+      <rect x={551} y={poleTop} width={18} height={540 - poleTop} rx={6} fill="url(#metal)" />
+      <rect x={547} y={440} width={26} height={100} rx={6} fill="url(#metal)" />
+      <rect x={545} y={430} width={30} height={14} rx={4} fill="#d8dce0" stroke="#8d949c" strokeWidth={2} />
+      <rect x={545} y={330 + 110 * (1 - handle)} width={30} height={12} rx={4} fill="#d8dce0" stroke="#8d949c" strokeWidth={2} opacity={handle} />
+      <rect x={552} y={455} width={16} height={60} rx={3} fill="#1b1b1b" />
+      {/* pemegang T */}
       <g opacity={handle}>
-        <line x1={hx} y1={top} x2={hx - 40 * handle} y2={top - 125 * handle} stroke="#9aa3ad" strokeWidth={14} strokeLinecap="round" />
-        <line x1={hx} y1={top} x2={hx - 20 * handle} y2={top - 60 * handle} stroke="#c9d0d6" strokeWidth={18} strokeLinecap="round" />
-        <rect x={hx - 40 * handle - 30} y={top - 125 * handle - 12} width={60} height={24} rx={12} fill="#111" />
+        <rect x={544} y={poleTop - 18} width={32} height={30} rx={8} fill="#d8dce0" />
+        <rect x={500} y={poleTop - 14} width={46} height={26} rx={13} fill="#1b1b1b" />
+        <rect x={574} y={poleTop - 14} width={46} height={26} rx={13} fill="#1b1b1b" />
       </g>
-      {/* pijak kaki */}
-      <rect x={505} y={515} width={78} height={14} rx={7} fill="#222" />
       {/* badan beg */}
-      <rect x={120} y={360} width={400} height={200} rx={34} fill="url(#shell)" />
+      <rect x={150} y={220} width={240} height={340} rx={26} fill="url(#shell)" />
       <g clipPath="url(#bodyClip)">
-        {[400, 440, 520].map((y) => (
-          <rect key={y} x={120} y={y} width={400} height={6} fill="rgba(0,0,0,0.25)" />
+        {Array.from({length: 40}, (_, i) => (
+          <rect key={i} x={150} y={226 + i * 8.4} width={240} height={1.5} fill="rgba(255,255,255,0.05)" />
         ))}
-        <rect x={120} y={360} width={400} height={10} fill={BRAND.bagAccent} />
-        {shine >= 0 && <rect x={120 + shine * 520 - 120} y={340} width={110} height={240} fill="url(#shine)" transform="skewX(-20)" />}
+        {/* bingkai aluminium tepi */}
+        <rect x={150} y={220} width={16} height={340} fill="#3b3e44" />
+        <rect x={374} y={220} width={16} height={340} fill="#3b3e44" />
+        {shine >= 0 && <rect x={150 + shine * 360 - 110} y={200} width={90} height={400} fill="url(#shine)" transform="skewX(-15)" />}
       </g>
-      <rect x={120} y={360} width={400} height={200} rx={34} fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth={4} />
-      {/* tempat duduk */}
-      <rect x={170} y={346} width={230} height={22} rx={11} fill="#111" />
-      {/* lampu */}
-      <rect x={512} y={455} width={10} height={40} rx={5} fill="#fff7c2" />
-      <rect x={118} y={455} width={8} height={40} rx={4} fill="#ff3b3b" />
-      <SvgLogo x={320} y={470} w={220} h={56} />
-      {/* roda */}
-      {[175, 465].map((x) => (
-        <g key={x} transform={`rotate(${wheelRot} ${x} 578)`}>
-          <circle cx={x} cy={578} r={28} fill="#111" />
-          <circle cx={x} cy={578} r={13} fill="#666" />
-          <rect x={x - 3} y={552} width={6} height={52} fill="#444" />
-        </g>
-      ))}
+      <rect x={150} y={220} width={240} height={340} rx={26} fill="none" stroke="#0b0b0c" strokeWidth={4} />
+      {/* kunci & zip */}
+      <rect x={368} y={300} width={10} height={26} rx={3} fill="#9aa1a9" />
+      <rect x={368} y={340} width={10} height={26} rx={3} fill="#9aa1a9" />
+      {/* pemegang atas */}
+      <rect x={215} y={206} width={110} height={16} rx={8} fill="#1b1b1b" />
+      {/* lencana bulat kuning */}
+      <circle cx={270} cy={305} r={34} fill="#1b1b1b" stroke={BRAND.bagAccent} strokeWidth={7} />
+      <circle cx={270} cy={305} r={24} fill="#2c2e33" />
+      <path d="M258 312 q12 -22 24 0 q-12 -8 -24 0 Z" fill={BRAND.bagAccent} opacity={0.85} />
+      {/* logo APR. */}
+      <rect x={176} y={395} width={188} height={70} rx={12} fill={BRAND.brand} />
+      <SvgLogo x={270} y={430} w={168} h={168 / BRAND.logoAspect} />
+      {/* roda belakang (dekat) */}
+      <Wheel x={340} y={592} r={26} rot={wheelRot} />
+      <rect x={325} y={556} width={30} height={16} rx={4} fill="#1b1b1b" />
+      <rect x={192} y={556} width={26} height={14} rx={4} fill="#1b1b1b" />
     </g>
   );
 };
 
+export const SE3S_VB = {x: 120, y: 60, w: 540, h: 580};
+
 export const Se3s: React.FC<{wheelRot?: number; shine?: number; handle?: number}> = (p) => (
-  <svg viewBox="80 200 560 420" width="100%" height="100%" style={{overflow: 'visible'}}>
-    <ellipse cx={330} cy={608} rx={250} ry={14} fill="rgba(0,0,0,0.3)" />
+  <svg viewBox={`${SE3S_VB.x} ${SE3S_VB.y} ${SE3S_VB.w} ${SE3S_VB.h}`} width="100%" height="100%" style={{overflow: 'visible'}}>
+    <ellipse cx={370} cy={618} rx={230} ry={12} fill="rgba(0,0,0,0.3)" />
     <Se3sBody {...p} />
   </svg>
 );

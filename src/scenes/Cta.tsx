@@ -82,7 +82,7 @@ export const Cta: React.FC = () => {
           );
         })}
 
-      <Headline text={`Komen "${word}" kalau nak satu 🧳`} start={0} end={119} size={80} />
+      <Headline text={`Komen "${word}" kalau nak sewa 🧳`} start={0} end={119} size={80} />
 
       <Sfx at={0} name="whoosh" volume={0.6} />
       {Array.from({length: word.length}, (_, i) => (
