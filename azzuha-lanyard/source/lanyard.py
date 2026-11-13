@@ -19,8 +19,7 @@ _logo = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo.svg'
 LOGO_PATHS = "".join(re.findall(r'<path[^>]*/>', _logo))
 
 # feature placement (strand frame)
-FEAT_V = 140.0      # start of flag / logo block, mm from the neck fold
-FLAG_LEN = 41.0
+FEAT_V = 215.0      # start of flag / logo block, mm from the neck fold (chest level)
 
 
 def logo(x, y, h):
@@ -131,47 +130,56 @@ def tile(ns="", seed=11):
     return "".join(f'<g transform="translate(0,{off})">{b}</g>' for off in (-TILE, 0, TILE))
 
 
-SLANT_DEG = 12.0    # stripes tilted so they read level when the strap hangs at an angle (as reference photo)
-PANEL_LEN = 26.0
+# --- flag + logo block (style of the original Azzuha lanyard) ---
+FLAG_W = 21.0                 # across the strap (flag's horizontal)
+FLAG_LEN = FLAG_W / 2         # along the strap (flag height, official 1:2)
+GAP = 7.0
+LOGO_ACROSS = 15.0            # logo height, laid across the strap
+_mk = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo_mark.svg')).read()
+_vb = [float(x) for x in re.search(r'viewBox="([^"]+)"', _mk).group(1).split()]
+_mk_d = "".join(re.findall(r' d="([^"]+)"', _mk))
+PANEL_LEN = LOGO_ACROSS * _vb[2] / _vb[3]   # logo length along the strap
+BLOCK_LEN = FLAG_LEN + GAP + PANEL_LEN
 
 
-def _band(a, b, sign, fill):
-    """band between two slanted lines (offsets a<b measured along the strap centre)."""
-    t = math.tan(math.radians(SLANT_DEG)) * sign
-    yl = lambda off, u: off + t * (u - 12.5)
-    return (f'<polygon fill="{fill}" points="-3,{yl(a,-3):.3f} 28,{yl(a,28):.3f} 28,{yl(b,28)+0.03:.3f} -3,{yl(b,-3)+0.03:.3f}"/>')
-
-
-def feature_block(y0, sign):
-    """Flag (blue canton with crescent & star, red/white stripes) followed directly by the Azzuha logo panel.
-    sign=+1 for the strap that hangs on the wearer's right (viewer's left), -1 for the other."""
-    o = []
-    ch = 20.0
-    o.append(_band(y0, y0 + ch, sign, "#010066"))
-    stripes = ["#CC0001", "#FFFFFF"] * 3
-    sh = (FLAG_LEN - ch) / len(stripes)
-    for i, c in enumerate(stripes):
-        o.append(_band(y0 + ch + i * sh, y0 + ch + (i + 1) * sh, sign, c))
-    cx, cy = 8.0, y0 + ch / 2 + math.tan(math.radians(SLANT_DEG)) * sign * (8.0 - 12.5)
-    sx = 18.6
-    sy = y0 + ch / 2 + math.tan(math.radians(SLANT_DEG)) * sign * (sx - 12.5)
-    o.append(f'<circle cx="{cx}" cy="{cy:.3f}" r="6.0" fill="#FFCC00"/>')
-    o.append(f'<circle cx="{cx+1.45}" cy="{cy:.3f}" r="5.1" fill="#010066"/>')
+def jalur_gemilang(x, y, w):
+    """Official-proportion Jalur Gemilang (1:2), upright, top-left (x,y), width w."""
+    h = w / 2; s = h / 14
+    o = [f'<g transform="translate({x:.3f},{y:.3f})">',
+         f'<rect x="-0.5" y="-0.5" width="{w+1:.3f}" height="{h+1:.3f}" fill="#FFFFFF"/>']
+    for i in range(14):
+        o.append(f'<rect y="{i*s:.4f}" width="{w:.4f}" height="{s+0.02:.4f}" fill="{"#CC0001" if i % 2 == 0 else "#FFFFFF"}"/>')
+    cw, ch = w / 2, 8 * s
+    o.append(f'<rect width="{cw:.4f}" height="{ch:.4f}" fill="#010066"/>')
+    u = ch / 8
+    cx, cy = 3.2 * u * cw / ch * 1.0 + 0.9 * u, ch / 2
+    o.append(f'<circle cx="{cx:.4f}" cy="{cy:.4f}" r="{3.0*u:.4f}" fill="#FFCC00"/>')
+    o.append(f'<circle cx="{cx+0.75*u:.4f}" cy="{cy:.4f}" r="{2.55*u:.4f}" fill="#010066"/>')
+    sx = cx + 4.9 * u
     pts = []
     for i in range(28):
         a_ = -math.pi / 2 + i * math.pi / 14
-        rr = 4.5 if i % 2 == 0 else 1.9
-        pts.append(f"{sx + rr*math.cos(a_):.3f},{sy + rr*math.sin(a_):.3f}")
-    o.append(f'<polygon points="{" ".join(pts)}" fill="#FFCC00"/>')
-    # logo panel directly under the flag
-    p0 = y0 + FLAG_LEN
-    o.append(_band(p0, p0 + PANEL_LEN, sign, P["panel"]))
-    o.append(_band(p0 + PANEL_LEN - 0.8, p0 + PANEL_LEN, sign, P["peach"]))
-    # logo rotated by the same angle as the stripes so it reads level when the strap hangs
-    lw = 20.0
-    lh = lw * LOGO_H / LOGO_W
-    lg, _ = logo(-lw / 2, -lh / 2, lh)
-    o.append(f'<g transform="translate(12.5,{p0 + PANEL_LEN/2:.3f}) rotate({sign*SLANT_DEG:.2f})">{lg}</g>')
+        rr = 2.35 * u if i % 2 == 0 else 1.0 * u
+        pts.append(f"{sx + rr*math.cos(a_):.4f},{cy + rr*math.sin(a_):.4f}")
+    o.append(f'<polygon points="{" ".join(pts)}" fill="#FFCC00"/></g>')
+    return "".join(o)
+
+
+def white_logo(cx, cy, rot):
+    """Azzuha mark (no tagline) in full white, laid along the strap, with a plain-olive knockout so the
+    busy floral pattern does not cut into it."""
+    sc = LOGO_ACROSS / _vb[3]
+    tf = f'translate({cx:.3f},{cy:.3f}) rotate({rot}) scale({sc:.5f}) translate({-_vb[0]-_vb[2]/2:.2f},{-_vb[1]-_vb[3]/2:.2f})'
+    L, A = PANEL_LEN + 4.0, LOGO_ACROSS + 3.0
+    return (f'<rect x="{cx-A/2:.3f}" y="{cy-L/2:.3f}" width="{A:.3f}" height="{L:.3f}" rx="2.5" fill="{P["bg"]}"/>'
+            f'<path transform="{tf}" d="{_mk_d}" fill="#FFFFFF"/>')
+
+
+def feature_block(y0, sign):
+    """Full Jalur Gemilang then the white Azzuha logo running along the strap.
+    sign=+1: viewer-left strap (logo reads top->bottom), -1: viewer-right strap (reads bottom->top)."""
+    o = [jalur_gemilang((25 - FLAG_W) / 2, y0, FLAG_W)]
+    o.append(white_logo(12.5, y0 + FLAG_LEN + GAP + PANEL_LEN / 2, 90 if sign > 0 else -90))
     return "".join(o)
 
 

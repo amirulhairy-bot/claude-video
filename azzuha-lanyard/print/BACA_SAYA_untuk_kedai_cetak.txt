@@ -12,12 +12,13 @@ Tab kulit  : Logo Azzuha (TANPA tulisan "GROUP TRAVEL & TOURS") di-DEBOSS / stam
              Fail acuan: Logo_Azzuha_Emboss_Tab_Kulit.svg
 Kuantiti   : ______ PCS
 
-DEPAN  : Corak bunga hijau zaitun
-         - KEDUA-DUA tali: Bendera Malaysia (41mm) bermula 140mm dari lipatan tengah (paras kolar)
-         - Logo Azzuha atas panel krim (26mm) terus di bawah bendera, kedua-dua tali
-         - Jalur bendera dicondongkan 12° (arah bertentangan pada tali kiri & kanan) supaya
-           nampak mendatar bila lanyard dipakai.
-         - Logo juga diputar 12° (ikut arah jalur) supaya nampak lurus bila dipakai
+DEPAN  : Corak bunga hijau zaitun (gaya chintz)
+         - KEDUA-DUA tali: Jalur Gemilang penuh, nisbah rasmi 1:2 (21 x 10.5mm,
+           bingkai putih 0.5mm), bermula 215mm dari lipatan tengah (paras dada)
+         - 7mm di bawah bendera: logo Azzuha PUTIH PENUH (tanpa tulisan bawah),
+           memanjang ikut tali (~27 x 15mm), atas panel hijau zaitun polos
+           (bucu bulat) supaya logo tajam
+         - Tali kiri: logo dibaca atas -> bawah; tali kanan: bawah -> atas
 BELAKANG: Corak bunga penuh (tiada logo / bendera)
 
 Fail:
