@@ -1,0 +1,30 @@
+{
+  "name": "claude-video",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "hyperframes": "hyperframes",
+    "preview": "hyperframes preview",
+    "render": "hyperframes render",
+    "lint": "hyperframes lint",
+    "doctor": "hyperframes doctor"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirulhairy-bot/claude-video.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amirulhairy-bot/claude-video/issues"
+  },
+  "homepage": "https://github.com/amirulhairy-bot/claude-video#readme",
+  "dependencies": {
+    "hyperframes": "^0.9.44"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}
