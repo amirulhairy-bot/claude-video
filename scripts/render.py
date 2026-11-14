@@ -72,6 +72,27 @@ def emoji_img(ch, size):
     im = im.crop(im.getbbox())
     return im.resize((size, int(size * im.height / im.width)), Image.LANCZOS)
 
+def glass_panel(cw, ch, r, pad):
+    size = (cw + pad * 2, ch + pad * 2)
+    box = (pad, pad, pad + cw, pad + ch)
+    shape = Image.new("L", size, 0); ImageDraw.Draw(shape).rounded_rectangle(box, r, fill=255)
+    sh_np = np.array(shape)
+    # soft drop shadow, only outside the glass
+    sm = shape.filter(ImageFilter.GaussianBlur(24)).transform(size, Image.AFFINE, (1, 0, 0, 0, 1, -14))
+    sm = Image.fromarray((np.array(sm) * 0.35 * (1 - sh_np / 255)).astype(np.uint8))
+    im = Image.new("RGBA", size, (10, 5, 25, 0)); im.putalpha(sm)
+    # top sheen gradient inside glass
+    g = np.zeros(size[::-1], np.float32)
+    yy = np.arange(size[1])[:, None]
+    g[:] = np.clip(1 - (yy - pad) / (ch * 0.55), 0, 1) * 0.28
+    sheen = Image.new("RGBA", size, (255, 255, 255, 0)); sheen.putalpha(Image.fromarray((g * sh_np).astype(np.uint8)))
+    im = Image.alpha_composite(im, sheen)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle(box, r, outline=(255, 255, 255, 190), width=3)
+    d.rounded_rectangle((pad + 3, pad + 3, pad + cw - 3, pad + ch - 3), r - 3, outline=(255, 255, 255, 60), width=2)
+    glass = np.zeros(size[::-1] + (4,), np.uint8); glass[..., 3] = sh_np
+    return im, glass
+
 def card_sprite(emoji, label, sub=None, w=None):
     fl = font(F_INTER_BL, 50); fs = font(F_INTER_SB, 30)
     lw = fl.getbbox(label)[2]
@@ -80,38 +101,28 @@ def card_sprite(emoji, label, sub=None, w=None):
     cw = max(w or 0, max(lw, sw) + 70)
     ch = 100 + e.height + 70 + (44 if sub else 0)
     pad = 60
-    im = Image.new("RGBA", (cw + pad * 2, ch + pad * 2), (0, 0, 0, 0))
-    # outer white glow
-    gm = Image.new("L", im.size, 0)
-    ImageDraw.Draw(gm).rounded_rectangle((pad, pad, pad + cw, pad + ch), 42, fill=255)
-    glow = Image.new("RGBA", im.size, (255, 255, 255, 0)); glow.putalpha(gm.filter(ImageFilter.GaussianBlur(26)).point(lambda v: int(v * 0.9)))
-    im = Image.alpha_composite(im, glow)
+    im, glass = glass_panel(cw, ch, 42, pad)
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle((pad, pad, pad + cw, pad + ch), 42, fill=(255, 255, 255, 238), outline=(255, 255, 255, 255), width=4)
     # lavender accent pill
     d.rounded_rectangle((pad + cw // 2 - 70, pad + ch - 30, pad + cw // 2 + 70, pad + ch - 20), 5, fill=LAV_D + (255,))
     im.alpha_composite(e, (pad + (cw - e.width) // 2, pad + 40))
     y = pad + 40 + e.height + 22
     d.text((pad + (cw - lw) // 2, y), label, font=fl, fill=(28, 22, 40, 255))
     if sub:
-        d.text((pad + (cw - sw) // 2, y + 62), sub, font=fs, fill=(110, 96, 140, 255))
-    return np.array(im)
+        d.text((pad + (cw - sw) // 2, y + 62), sub, font=fs, fill=(80, 60, 120, 255))
+    return np.array(im), glass
 
 def cta_sprite():
     cw, ch, pad = 900, 190, 60
-    im = Image.new("RGBA", (cw + pad * 2, ch + pad * 2), (0, 0, 0, 0))
-    gm = Image.new("L", im.size, 0)
-    ImageDraw.Draw(gm).rounded_rectangle((pad, pad, pad + cw, pad + ch), 95, fill=255)
-    glow = Image.new("RGBA", im.size, LAV + (0,)); glow.putalpha(gm.filter(ImageFilter.GaussianBlur(30)))
-    im = Image.alpha_composite(im, glow)
+    im, glass = glass_panel(cw, ch, 95, pad)
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle((pad, pad, pad + cw, pad + ch), 95, fill=(255, 255, 255, 245))
+    d.ellipse((pad + 95 - 74, pad + ch // 2 - 74, pad + 95 + 74, pad + ch // 2 + 74), fill=(255, 255, 255, 235))
     cx, cy, r = pad + 95, pad + ch // 2, 66
     ic = LOGO.crop((0, 0, LOGO.width, int(LOGO.height * 0.70))); ic.thumbnail((128, 128), Image.LANCZOS)
     im.alpha_composite(ic, (cx - ic.width // 2, cy - ic.height // 2))
     d.text((pad + 190, pad + 34), "Lavender Confinement Care", font=font(F_INTER_BL, 46), fill=(28, 22, 40, 255))
-    d.text((pad + 190, pad + 108), "Herbal Cream  •  Penjagaan Berpantang", font=font(F_INTER_SB, 34), fill=(110, 90, 160, 255))
-    return np.array(im)
+    d.text((pad + 190, pad + 108), "Herbal Cream  •  Penjagaan Berpantang", font=font(F_INTER_SB, 34), fill=(80, 60, 120, 255))
+    return np.array(im), glass
 
 def logo_sprite(width, icon_only=False, plate=True):
     lg = LOGO
@@ -155,6 +166,8 @@ def ease_back(x):
 # ---------------------------------------------------------------- elements
 class El:
     def __init__(self, sprite, t0, t1, x, y, layer="back", anim="title", scale=1.0, float_amp=0):
+        self.glass = None
+        if isinstance(sprite, tuple): sprite, self.glass = sprite
         self.sp, self.t0, self.t1, self.x, self.y = sprite, t0, t1, x, y
         self.layer, self.anim, self.scale, self.fa = layer, anim, scale, float_amp
 
@@ -379,6 +392,19 @@ while True:
         prev_mask = None
     front = [e for e in els if e.layer == "front" and e.state(t)]
     cap = caption(t)
+    gl_els = [e for e in front if e.glass is not None]
+    if gl_els:
+        gl = np.zeros((H, W, 4), np.float32)
+        for e in gl_els:
+            a, sc, bl, dy = e.state(t); blit(gl, e.glass, e.x, e.y + dy, a, sc, 0)
+        sm = cv2.resize(base, (W // 6, H // 6), interpolation=cv2.INTER_AREA)
+        sm = cv2.GaussianBlur(sm, (0, 0), 7)
+        fr_ = cv2.resize(sm, (W, H), interpolation=cv2.INTER_LINEAR)
+        lum = fr_.mean(-1, keepdims=True)
+        fr_ = np.clip(lum + (fr_ - lum) * 1.25, 0, 255)          # richer colour through the glass
+        fr_ = fr_ * 0.70 + 255 * 0.30                             # milky frosted tint
+        ga = gl[..., 3:4]
+        base = fr_ * ga + base * (1 - ga)
     if front or cap:
         lay = np.zeros((H, W, 4), np.float32)
         for e in front:
