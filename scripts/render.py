@@ -77,7 +77,7 @@ def card_sprite(emoji, label, sub=None, w=None):
     lw = fl.getbbox(label)[2]
     sw = fs.getbbox(sub)[2] if sub else 0
     e = emoji_img(emoji, 92)
-    cw = w or max(lw, sw) + 80
+    cw = max(w or 0, max(lw, sw) + 70)
     ch = 100 + e.height + 70 + (44 if sub else 0)
     pad = 60
     im = Image.new("RGBA", (cw + pad * 2, ch + pad * 2), (0, 0, 0, 0))
@@ -110,7 +110,7 @@ def cta_sprite():
     ic = LOGO.crop((0, 0, LOGO.width, int(LOGO.height * 0.70))); ic.thumbnail((128, 128), Image.LANCZOS)
     im.alpha_composite(ic, (cx - ic.width // 2, cy - ic.height // 2))
     d.text((pad + 190, pad + 34), "Lavender Confinement Care", font=font(F_INTER_BL, 46), fill=(28, 22, 40, 255))
-    d.text((pad + 190, pad + 108), "Jangan lupa tag kita!  ✓ Herbal Cream", font=font(F_INTER_SB, 34), fill=(110, 90, 160, 255))
+    d.text((pad + 190, pad + 108), "Herbal Cream  •  Penjagaan Berpantang", font=font(F_INTER_SB, 34), fill=(110, 90, 160, 255))
     return np.array(im)
 
 def logo_sprite(width, icon_only=False, plate=True):
@@ -200,30 +200,30 @@ fA = font(F_ANTON, 250)
 els = []
 def T(*a, **k): els.append(El(*a, **k))
 
-T(text_sprite("Assalamualaikum", font(F_PLAY, 96), glow=LAV, glow_r=14, glow_k=1.0), 2.18, 2.95, 540, 760)
-T(text_sprite(["MOMMIES", ("di luar sana", font(F_PLAY, 100), (255, 255, 255))], font(F_ANTON, 205), fill=(255, 255, 255), glow=LAV_D, glow_r=20, glow_k=1.3), 2.95, 5.6, 540, 810)
-T(text_sprite("Acik nak sarankan", font(F_INTER_BL, 78), glow=None), 6.98, 8.40, 540, 560, anim="rise")
-T(text_sprite("TERBAIK", font(F_ANTON, 300), fill=(246, 238, 255), glow=(170, 120, 255), glow_r=26, glow_k=2.2), 8.46, 9.55, 540, 840)
-T(text_sprite([("di mana-mana", font(F_PLAY, 150), (255, 255, 255)), ("kita berada", font(F_PLAY, 96), LAV)], None), 9.58, 11.55, 540, 810)
+T(text_sprite("khas buat", font(F_PLAY, 110), glow=LAV, glow_r=14, glow_k=1.0), 2.18, 2.95, 540, 760)
+T(text_sprite([("yang sayangkan keluarga", font(F_PLAY, 72), (255, 255, 255)), "SEMUA IBU"], font(F_ANTON, 215), fill=(255, 255, 255), glow=LAV_D, glow_r=20, glow_k=1.3), 2.95, 5.6, 540, 810)
+T(text_sprite("Pilihan Acik ✓", font(F_INTER_BL, 78), glow=None), 6.98, 8.40, 540, 560, anim="rise")
+T(text_sprite("WAJIB CUBA", font(F_ANTON, 200), fill=(246, 238, 255), glow=(170, 120, 255), glow_r=26, glow_k=2.2), 8.46, 9.55, 540, 840)
+T(text_sprite([("rumah • kerja • bercuti", font(F_INTER_BL, 60), (255, 255, 255)), ("bila-bila masa", font(F_PLAY, 118), (255, 255, 255))], None), 9.58, 11.55, 540, 790)
 
-cards = [("🧑", "Dewasa", None, 12.66, 230, 600), ("🧒", "Kanak-kanak", None, 13.58, 850, 540),
-         ("🤱", "Ibu Pantang", None, 14.88, 205, 1010), ("👩", "Ibu-ibu", "biasa pun boleh", 16.02, 875, 960)]
+cards = [("🧑", "Ayah & Ibu", None, 12.66, 240, 600), ("🧒", "Si Kecil", None, 13.58, 845, 540),
+         ("🤱", "Lepas Bersalin", None, 14.88, 245, 1010), ("👩", "Harian", "untuk semua wanita", 16.02, 845, 960)]
 for i, (e, l, sub, t0, x, y) in enumerate(cards):
-    T(card_sprite(e, l, sub, w=330), t0, 18.9 + i * 0.06, x, y, layer="front", anim="pop", scale=0.95, float_amp=8)
+    T(card_sprite(e, l, sub, w=370), t0, 18.9 + i * 0.06, x, y, layer="front", anim="pop", scale=0.95, float_amp=8)
 
-T(text_sprite([("Confinement Care", font(F_INTER_SB, 64), (255, 255, 255)), ("LAVENDER", font(F_PLAY, 185), (255, 255, 255))], None, glow=LAV_D, glow_r=16, glow_k=1.0), 22.55, 24.45, 540, 770)
-T(chroma_sprite(["KE", "MANA-MANA"], font(F_ANTON, 205)), 24.52, 26.80, 540, 760)
-T(text_sprite([("banyak", font(F_INTER_BL, 80), (255, 255, 255)), ("BENEFIT", font(F_ANTON, 280), (255, 70, 100))], None, glow=RED, glow_r=22, glow_k=1.6), 27.75, 29.55, 540, 780)
+T(text_sprite([("Full Body • Forehead", font(F_INTER_SB, 60), (255, 255, 255)), ("HERBAL CREAM", font(F_PLAY, 118), (255, 255, 255))], None, glow=LAV_D, glow_r=16, glow_k=1.0), 22.55, 24.45, 540, 770)
+T(chroma_sprite(["MUDAH", "DIBAWA"], font(F_ANTON, 215)), 24.52, 26.80, 540, 760)
+T(text_sprite([("satu tiub,", font(F_INTER_BL, 80), (255, 255, 255)), ("SERBA GUNA", font(F_ANTON, 200), (255, 70, 100))], None, glow=RED, glow_r=22, glow_k=1.6), 27.75, 29.55, 540, 780)
 
-sym = [("🤕", "Pening", 30.76, 225, 640), ("😣", "Perut Kembung", 31.20, 850, 580), ("🥵", "Panas Badan", 32.30, 215, 1020)]
+sym = [("🤕", "Kepala Berat", 30.76, 250, 640), ("😣", "Perut Tak Selesa", 31.20, 830, 580), ("🥵", "Badan Rasa Panas", 32.30, 270, 1020)]
 for i, (e, l, t0, x, y) in enumerate(sym):
-    T(card_sprite(e, l, None, w=360 if len(l) > 8 else 300), t0, 33.85 + i * 0.06, x, y, layer="front", anim="pop", scale=0.95, float_amp=8)
+    T(card_sprite(e, l, None, w=400 if len(l) > 12 else 340), t0, 33.85 + i * 0.06, x, y, layer="front", anim="pop", scale=0.95, float_amp=8)
 
-T(text_sprite("GUNALAH", font(F_ANTON, 290), fill=(255, 255, 255), glow=LAV_D, glow_r=22, glow_k=1.5), 34.26, 35.45, 540, 820)
-T(text_sprite("CARILAH", font(F_ANTON, 290), fill=(255, 255, 255), glow=(0, 0, 0), glow_r=18, glow_k=0.8), 35.48, 36.62, 540, 820)
-T(text_sprite("BELILAH", font(F_ANTON, 290), fill=(246, 238, 255), glow=(170, 120, 255), glow_r=26, glow_k=2.2), 36.66, 37.74, 540, 820)
-T(text_sprite([("sentiasa", font(F_PLAY, 170), (255, 255, 255)), ("di mana-mana", font(F_PLAY, 96), LAV)], None, glow=(30, 10, 60), glow_r=16, glow_k=0.8), 37.76, 39.68, 540, 800)
-T(text_sprite([("jangan lupa", font(F_INTER_BL, 80), (255, 255, 255)), ("TAG KITA", font(F_ANTON, 270), (255, 70, 100))], None, glow=RED, glow_r=22, glow_k=1.6), 40.70, 42.65, 540, 780)
+T(text_sprite("JANGAN TUNGGU", font(F_ANTON, 160), fill=(255, 255, 255), glow=LAV_D, glow_r=22, glow_k=1.5), 34.26, 35.45, 540, 820)
+T(text_sprite([("segera", font(F_INTER_BL, 80), (255, 255, 255)), "DAPATKAN"], font(F_ANTON, 215), fill=(246, 238, 255), glow=(170, 120, 255), glow_r=24, glow_k=1.6), 35.48, 37.74, 540, 790)
+
+T(text_sprite([("sentiasa jadi", font(F_INTER_BL, 66), (255, 255, 255)), ("teman setia", font(F_PLAY, 135), (255, 255, 255))], None, glow=(30, 10, 60), glow_r=16, glow_k=0.8), 37.76, 39.68, 540, 800)
+T(text_sprite([("kongsikan pada", font(F_INTER_BL, 76), (255, 255, 255)), ("RAKAN-RAKAN", font(F_ANTON, 165), (255, 70, 100))], None, glow=RED, glow_r=22, glow_k=1.6), 40.70, 42.65, 540, 780)
 T(logo_sprite(400), 42.70, T1 + 1, 540, 530)
 T(logo_sprite(165, plate=True), T0, 42.6, 940, 185, layer="front", anim="none")
 T(cta_sprite(), 41.75, T1 + 1, 540, 1640, layer="front", anim="rise")
