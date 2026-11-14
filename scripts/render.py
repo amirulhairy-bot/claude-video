@@ -21,7 +21,8 @@ F_INTER_SB = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
 F_EMOJI = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
 
 LAV = (182, 150, 255)
-LAV_D = (124, 84, 230)
+LAV_D = (168, 85, 160)
+LOGO = Image.open(f"{S}/logo.png")
 RED = (255, 40, 80)
 
 # ---------------------------------------------------------------- sprites
@@ -106,10 +107,23 @@ def cta_sprite():
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((pad, pad, pad + cw, pad + ch), 95, fill=(255, 255, 255, 245))
     cx, cy, r = pad + 95, pad + ch // 2, 66
-    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=LAV_D + (255,))
-    e = emoji_img("💜", 70); im.alpha_composite(e, (cx - e.width // 2, cy - e.height // 2))
+    ic = LOGO.crop((0, 0, LOGO.width, int(LOGO.height * 0.70))); ic.thumbnail((128, 128), Image.LANCZOS)
+    im.alpha_composite(ic, (cx - ic.width // 2, cy - ic.height // 2))
     d.text((pad + 190, pad + 34), "Lavender Confinement Care", font=font(F_INTER_BL, 46), fill=(28, 22, 40, 255))
     d.text((pad + 190, pad + 108), "Jangan lupa tag kita!  ✓ Herbal Cream", font=font(F_INTER_SB, 34), fill=(110, 90, 160, 255))
+    return np.array(im)
+
+def logo_sprite(width, icon_only=False, plate=True):
+    lg = LOGO
+    if icon_only: lg = lg.crop((0, 0, lg.width, int(lg.height * 0.70)))
+    lg = lg.resize((width, int(width * lg.height / lg.width)), Image.LANCZOS)
+    pad = 70
+    im = Image.new("RGBA", (lg.width + pad * 2, lg.height + pad * 2), (0, 0, 0, 0))
+    if plate:
+        m = Image.new("L", im.size, 0); m.paste(lg.split()[3], (pad, pad))
+        m = m.filter(ImageFilter.MaxFilter(15)).filter(ImageFilter.GaussianBlur(22)).point(lambda v: min(255, int(v * 1.6)))
+        g = Image.new("RGBA", im.size, (255, 255, 255, 0)); g.putalpha(m); im = Image.alpha_composite(im, g)
+    im.alpha_composite(lg, (pad, pad))
     return np.array(im)
 
 def chroma_sprite(lines, fnt):
@@ -155,6 +169,8 @@ class El:
         elif self.anim == "pop":
             sc = max(0.01, ease_back(a_in / 0.38)); alpha = clamp(a_in / 0.12)
             dy = self.fa * math.sin((t - self.t0) * 2.2)
+        elif self.anim == "none":
+            alpha = clamp(a_in / 0.4)
         elif self.anim == "rise":
             k = ease_out(a_in / 0.45); dy = (1 - k) * 160; alpha = clamp(a_in / 0.25)
         if a_out < 0:
@@ -185,7 +201,7 @@ els = []
 def T(*a, **k): els.append(El(*a, **k))
 
 T(text_sprite("Assalamualaikum", font(F_PLAY, 96), glow=LAV, glow_r=14, glow_k=1.0), 2.18, 2.95, 540, 760)
-T(text_sprite(["MAMI-MAMI", ("di luar sana", font(F_PLAY, 100), (255, 255, 255))], font(F_ANTON, 205), fill=(255, 255, 255), glow=LAV_D, glow_r=20, glow_k=1.3), 2.95, 5.6, 540, 810)
+T(text_sprite(["MOMMIES", ("di luar sana", font(F_PLAY, 100), (255, 255, 255))], font(F_ANTON, 205), fill=(255, 255, 255), glow=LAV_D, glow_r=20, glow_k=1.3), 2.95, 5.6, 540, 810)
 T(text_sprite("Acik nak sarankan", font(F_INTER_BL, 78), glow=None), 6.98, 8.40, 540, 560, anim="rise")
 T(text_sprite("TERBAIK", font(F_ANTON, 300), fill=(246, 238, 255), glow=(170, 120, 255), glow_r=26, glow_k=2.2), 8.46, 9.55, 540, 840)
 T(text_sprite([("di mana-mana", font(F_PLAY, 150), (255, 255, 255)), ("kita berada", font(F_PLAY, 96), LAV)], None), 9.58, 11.55, 540, 810)
@@ -208,7 +224,8 @@ T(text_sprite("CARILAH", font(F_ANTON, 290), fill=(255, 255, 255), glow=(0, 0, 0
 T(text_sprite("BELILAH", font(F_ANTON, 290), fill=(246, 238, 255), glow=(170, 120, 255), glow_r=26, glow_k=2.2), 36.66, 37.74, 540, 820)
 T(text_sprite([("sentiasa", font(F_PLAY, 170), (255, 255, 255)), ("di mana-mana", font(F_PLAY, 96), LAV)], None, glow=(30, 10, 60), glow_r=16, glow_k=0.8), 37.76, 39.68, 540, 800)
 T(text_sprite([("jangan lupa", font(F_INTER_BL, 80), (255, 255, 255)), ("TAG KITA", font(F_ANTON, 270), (255, 70, 100))], None, glow=RED, glow_r=22, glow_k=1.6), 40.70, 42.65, 540, 780)
-T(text_sprite([("Confinement Care", font(F_INTER_SB, 64), (255, 255, 255)), ("LAVENDER", font(F_PLAY, 185), (255, 255, 255))], None, glow=LAV_D, glow_r=16, glow_k=1.0), 42.70, T1 + 1, 540, 770)
+T(logo_sprite(400), 42.70, T1 + 1, 540, 530)
+T(logo_sprite(165, plate=True), T0, 42.6, 940, 185, layer="front", anim="none")
 T(cta_sprite(), 41.75, T1 + 1, 540, 1640, layer="front", anim="rise")
 
 # camera: (t0, t1, s0, s1, focus)
@@ -244,6 +261,9 @@ for w in words:
     if t.startswith("-") and ws: ws[-1]["w"] += t; ws[-1]["e"] = w["e"]; continue
     if ws and ws[-1]["w"] == "Ke" and t == "panasan": ws[-1]["w"] = "Kepanasan"; ws[-1]["e"] = w["e"]; continue
     ws.append(dict(w=t, s=w["s"], e=w["e"]))
+for w in ws:
+    if w["w"].lower() == "mami-mami": w["w"] = "Mommies"
+
 chunks, cur = [], []
 for i, w in enumerate(ws):
     cur.append(w)
@@ -292,17 +312,22 @@ def caption(t):
 # ---------------------------------------------------------------- grade
 yy = np.linspace(0, 1, H)[:, None]
 xx = np.linspace(-1, 1, W)[None, :]
-vign = (1 - 0.35 * np.clip((xx ** 2 + ((yy - 0.5) * 2) ** 2) - 0.35, 0, 1)).astype(np.float32)
-topdark = (1 - 0.22 * np.clip(1 - yy / 0.55, 0, 1)).astype(np.float32)
-GRADE = (vign * topdark)[..., None]
-lut = np.clip(255 * (1 / (1 + np.exp(-(np.arange(256) / 255 - 0.5) * 5.2)) - 0.0691) / (0.9309 - 0.0691), 0, 255).astype(np.uint8)
+vign = (1 - 0.10 * np.clip((xx ** 2 + ((yy - 0.5) * 2) ** 2) - 0.6, 0, 1)).astype(np.float32)
+GRADE = vign[..., None]
+_x = np.arange(256) / 255
+_y = _x ** 0.78                                   # exposure lift (~+0.6 stop in mids)
+_y = _y + 0.10 * np.sin(np.pi * _y) * (_y - 0.5)   # gentle S for punch
+_y = 0.02 + 0.97 * _y                              # soft blacks, protected whites
+lut = np.clip(_y * 255, 0, 255).astype(np.uint8)
 
 def grade(fr):
     fr = cv2.LUT(fr, lut)
     hsv = cv2.cvtColor(fr, cv2.COLOR_BGR2HSV).astype(np.float32)
-    hsv[..., 1] = np.clip(hsv[..., 1] * 1.12, 0, 255)
+    sat = hsv[..., 1]; hsv[..., 1] = np.clip(sat + (255 - sat) * 0.10 * (sat < 160), 0, 255)  # vibrance
     fr = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR).astype(np.float32)
-    fr[..., 0] *= 0.97; fr[..., 2] *= 1.03  # slightly warm
+    fr[..., 0] *= 0.985; fr[..., 2] *= 1.015  # touch of warmth
+    bloom = cv2.GaussianBlur(np.clip(fr - 190, 0, 255), (0, 0), 18)
+    fr = fr + bloom * 0.35                     # soft highlight glow
     return np.clip(fr * GRADE, 0, 255)
 
 # ---------------------------------------------------------------- segmentation
