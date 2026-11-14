@@ -8,10 +8,10 @@ import {BRAND, SAFE_BOX} from '../config';
 const TYPE_START = 22;
 const CHAR_EVERY = 4;
 
-export const Cta: React.FC = () => {
+export const Cta: React.FC<{word?: string; headline?: string; bg?: (frame: number) => React.ReactNode}> = ({word: wordProp, headline, bg}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const word = BRAND.commentKeyword;
+  const word = wordProp ?? BRAND.commentKeyword;
   const typed = Math.max(0, Math.min(word.length, Math.floor((frame - TYPE_START) / CHAR_EVERY) + 1));
   const sendAt = TYPE_START + word.length * CHAR_EVERY + 8;
   const sent = frame >= sendAt;
@@ -22,7 +22,7 @@ export const Cta: React.FC = () => {
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{filter: 'blur(7px) brightness(0.55)', transform: 'scale(1.06)'}}>
-        <RiderOnAirport frame={180 + frame} enter={false} />
+        {bg ? bg(frame) : <RiderOnAirport frame={180 + frame} enter={false} />}
       </AbsoluteFill>
 
       {/* kotak komen */}
@@ -82,7 +82,7 @@ export const Cta: React.FC = () => {
           );
         })}
 
-      <Headline text={`Komen "${word}" kalau nak sewa 🧳`} start={0} end={119} size={80} />
+      <Headline text={headline ?? `Komen "${word}" kalau nak sewa 🧳`} start={0} end={119} size={80} />
 
       <Sfx at={0} name="whoosh" volume={0.6} />
       {Array.from({length: word.length}, (_, i) => (

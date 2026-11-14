@@ -55,19 +55,35 @@ export const Face: React.FC<{mood: Mood; cx: number; cy: number}> = ({mood, cx, 
   );
 };
 
-export const Head: React.FC<{x: number; y: number; mood: Mood; wind?: number}> = ({x, y, mood, wind = 0}) => {
+export type Palette = typeof C;
+
+// Palet ibu muda di Makkah: abaya hitam, tudung krim
+export const MOM: Palette = {
+  ...C,
+  skin: '#E3B48E',
+  hijab: '#EFE6D6',
+  hijabShade: '#CDBFA6',
+  baju: '#26262c',
+  bajuShade: '#141418',
+  kain: '#26262c',
+  kainDot: '#26262c',
+  shoe: '#3b2a20',
+};
+
+export const Head: React.FC<{x: number; y: number; mood: Mood; wind?: number; pal?: Palette}> = ({x, y, mood, wind = 0, pal = C}) => {
+  const C_ = pal;
   // x,y = pusat kepala
   return (
     <g>
       {/* hujung tudung berkibar */}
       <path
         d={`M${x - 40} ${y + 30} Q${x - 70 - wind * 40} ${y + 70 + wind * 10} ${x - 55 - wind * 90} ${y + 120 - wind * 30} L${x - 10} ${y + 110} Z`}
-        fill={C.hijabShade}
+        fill={C_.hijabShade}
       />
-      <circle cx={x - 5} cy={y} r={52} fill={C.hijab} />
-      <ellipse cx={x + 18} cy={y + 7} rx={28} ry={34} fill={C.skin} />
-      <path d={`M${x - 14} ${y - 22} Q${x + 18} ${y - 46} ${x + 50} ${y - 18} Q${x + 30} ${y - 30} ${x - 6} ${y - 4} Z`} fill={C.hijab} />
-      <ellipse cx={x + 18} cy={y + 7} rx={30} ry={36} fill="none" stroke={C.hijabShade} strokeWidth={5} />
+      <circle cx={x - 5} cy={y} r={52} fill={C_.hijab} />
+      <ellipse cx={x + 18} cy={y + 7} rx={28} ry={34} fill={C_.skin} />
+      <path d={`M${x - 14} ${y - 22} Q${x + 18} ${y - 46} ${x + 50} ${y - 18} Q${x + 30} ${y - 30} ${x - 6} ${y - 4} Z`} fill={C_.hijab} />
+      <ellipse cx={x + 18} cy={y + 7} rx={30} ry={36} fill="none" stroke={C_.hijabShade} strokeWidth={5} />
       <Face mood={mood} cx={x + 14} cy={y + 8} />
     </g>
   );
@@ -79,7 +95,8 @@ export const MakcikWalk: React.FC<{
   mood: Mood;
   arm?: 'pull' | 'knee' | 'wave' | 'down';
   sweat?: number; // 0..1
-}> = ({phase, mood, arm = 'pull', sweat = 0}) => {
+  pal?: Palette;
+}> = ({phase, mood, arm = 'pull', sweat = 0, pal = C}) => {
   const s = Math.sin(phase);
   const lift = (p: number) => Math.max(0, Math.cos(p)) * 8;
   const fx = 172 + 30 * s;
@@ -92,26 +109,26 @@ export const MakcikWalk: React.FC<{
       <ellipse cx={158} cy={508} rx={90} ry={10} fill="rgba(0,0,0,0.25)" />
       <g transform={`translate(0 ${bob})`}>
         {/* kasut */}
-        <ellipse cx={bx} cy={500 - lift(phase + Math.PI)} rx={24} ry={10} fill={C.shoe} />
-        <ellipse cx={fx} cy={500 - lift(phase)} rx={24} ry={10} fill={C.shoe} />
+        <ellipse cx={bx} cy={500 - lift(phase + Math.PI)} rx={24} ry={10} fill={pal.shoe} />
+        <ellipse cx={fx} cy={500 - lift(phase)} rx={24} ry={10} fill={pal.shoe} />
         {/* kain */}
         <path
           d={`M118 300 L202 300 Q${Math.max(fx, bx) + 20} 420 ${Math.max(fx, bx) + 14} 492 L${Math.min(fx, bx) - 16} 492 Q${Math.min(fx, bx) - 18} 420 118 300 Z`}
-          fill={C.kain}
+          fill={pal.kain}
         />
         {[0, 1, 2, 3, 4, 5].map((i) => (
-          <circle key={i} cx={130 + (i % 3) * 25 + (i > 2 ? 12 : 0)} cy={380 + Math.floor(i / 3) * 50} r={6} fill={C.kainDot} />
+          <circle key={i} cx={130 + (i % 3) * 25 + (i > 2 ? 12 : 0)} cy={380 + Math.floor(i / 3) * 50} r={6} fill={pal.kainDot} />
         ))}
         {/* baju kurung */}
-        <path d="M120 160 Q160 146 200 160 L222 345 Q160 358 100 345 Z" fill={C.baju} />
-        <path d="M120 160 L100 345 Q115 349 132 351 L140 170 Z" fill={C.bajuShade} />
+        <path d="M120 160 Q160 146 200 160 L222 345 Q160 358 100 345 Z" fill={pal.baju} />
+        <path d="M120 160 L100 345 Q115 349 132 351 L140 170 Z" fill={pal.bajuShade} />
         {/* tudung labuh di dada */}
-        <path d="M108 110 Q160 92 210 112 L226 218 Q165 240 98 214 Z" fill={C.hijab} />
-        <Head x={155} y={82} mood={mood} />
+        <path d="M108 110 Q160 92 210 112 L226 218 Q165 240 98 214 Z" fill={pal.hijab} />
+        <Head x={155} y={82} mood={mood} pal={pal} />
         {/* lengan */}
         <g transform={`rotate(${armRot} 168 172)`}>
-          <rect x={155} y={160} width={28} height={118} rx={14} fill={C.baju} />
-          <circle cx={169} cy={290} r={15} fill={C.skin} />
+          <rect x={155} y={160} width={28} height={118} rx={14} fill={pal.baju} />
+          <circle cx={169} cy={290} r={15} fill={pal.skin} />
         </g>
         {/* peluh */}
         {sweat > 0 && (

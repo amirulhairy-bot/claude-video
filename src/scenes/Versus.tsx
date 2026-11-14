@@ -6,13 +6,18 @@ import {Sfx} from '../components/Sfx';
 import {FONT} from '../components/fonts';
 import {BRAND, SAFE_BOX, WIDTH} from '../config';
 
-const FEATURES = [
+const DEFAULT_FEATURES = [
   {at: 95, text: '🧳 Beg + skuter dalam satu'},
   {at: 113, text: '🪑 Duduk & terus meluncur'},
   {at: 131, text: '🦵 Lutut boleh rehat'},
 ];
 
-export const Versus: React.FC = () => {
+export const Versus: React.FC<{titleA?: string; titleB?: string; features?: string[]}> = ({
+  titleA = 'Vs.. 🤔',
+  titleB = 'Keputusan bijak 💡',
+  features,
+}) => {
+  const FEATURES = features ? features.map((text, i) => ({at: 95 + i * 18, text})) : DEFAULT_FEATURES;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const drop = spring({frame: frame - 34, fps, config: {damping: 9, stiffness: 140}});
@@ -107,8 +112,8 @@ export const Versus: React.FC = () => {
         );
       })}
 
-      <Headline text="Vs.. 🤔" start={0} end={56} size={120} />
-      <Headline text="Keputusan bijak 💡" start={58} end={164} />
+      <Headline text={titleA} start={0} end={56} size={titleA.length > 10 ? 96 : 120} />
+      <Headline text={titleB} start={58} end={164} size={titleB.length > 22 ? 72 : 84} />
 
       <Sfx at={0} name="whoosh" volume={0.7} />
       <Sfx at={2} name="riser" volume={0.6} />
