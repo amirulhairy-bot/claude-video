@@ -151,6 +151,10 @@ def gradient(top_alpha, bottom_alpha, start, end):
 
 
 GRAD = gradient(0.75, 0.92, 520, 980)
+_b2 = np.zeros((H, W, 4), dtype=np.uint8)
+_b2[..., 0:3] = (6, 14, 28)
+_b2[..., 3] = (175 * np.exp(-((np.arange(H) - 1250) / 300.0) ** 2)).astype(np.uint8)[:, None]
+GRAD = Image.alpha_composite(GRAD, Image.fromarray(_b2, "RGBA"))
 GRAD_HOOK = gradient(0.55, 0.85, 700, 900)
 _band = np.zeros((H, W, 4), dtype=np.uint8)
 _band[..., 0:3] = (6, 14, 28)
@@ -247,19 +251,31 @@ def draw_poster(fr, t, cx, cy, base, start, dur):
 
 # Uniform typography: one font, one colour, one size (RM2,500 slightly larger).
 TXT_FONT = SANS_SB
-TXT_SIZE = 50
-BIG_SIZE = 66
-LINE = 76
+TXT_SIZE = 46
+BIG_SIZE = 60
+LINE = 66
 LEFT = 70
+
+# IG Reels + TikTok combined safe zone (1080x1920): keep text clear of the
+# top bar, the caption/buttons at the bottom and the action column on the right.
+SAFE_TOP, SAFE_BOTTOM = 250, 1440
+SAFE_LEFT, SAFE_RIGHT = 60, 940
 
 
 def say(fr, text, y, t, start, align="left", big=False):
-    sp = text_sprite(text, TXT_FONT, BIG_SIZE if big else TXT_SIZE, WHITE)
+    size = BIG_SIZE if big else TXT_SIZE
+    sp = text_sprite(text, TXT_FONT, size, WHITE)
+    tw = font(TXT_FONT, size).getlength(text)
+    if align == "left":
+        assert LEFT >= SAFE_LEFT and LEFT + tw <= SAFE_RIGHT, f"outside safe zone: {text}"
+    else:
+        assert W / 2 + tw / 2 <= SAFE_RIGHT, f"outside safe zone: {text}"
+    assert y >= SAFE_TOP and y + size * 1.25 <= SAFE_BOTTOM, f"outside safe zone (y): {text}"
     x = LEFT if align == "left" else W / 2
     anim_line(fr, sp, x, y, t, start, align=align)
 
 
-def say_block(fr, lines, t, start=0.25, gap=0.3, bottom=1790):
+def say_block(fr, lines, t, start=0.25, gap=0.3, bottom=SAFE_BOTTOM - 10):
     """Left-aligned block anchored to the bottom of the frame."""
     y = bottom - LINE * len(lines)
     for k, ln in enumerate(lines):
@@ -270,8 +286,8 @@ def scene_hook(t, dur):
     i = min(int(t * FPS), len(VID) - 1)
     fr = Image.fromarray(VID[i]).convert("RGBA")
     fr = Image.alpha_composite(fr, GRAD_HOOK)
-    say(fr, "Event pertama kami.", 250, t, 0.0, align="center")
-    say(fr, "Dapat sales", 326, t, 0.15, align="center")
+    say(fr, "Event pertama kami.", 270, t, 0.0, align="center")
+    say(fr, "Dapat sales", 336, t, 0.15, align="center")
     p = ease_out((t - 0.2) / 1.8)
     val = int(round(2500 * p / 10.0)) * 10
     pop = 1.0
@@ -279,10 +295,10 @@ def scene_hook(t, dur):
         pop = 1 + 0.08 * math.sin((t - 2.0) / 0.4 * math.pi)
     put(fr, text_sprite(f"RM{val:,}", TXT_FONT, BIG_SIZE, WHITE), W / 2, 402,
         alpha=ease_out((t - 0.2) / 0.25), scale=pop)
-    say(fr, "dalam 1 hari.", 494, t, 0.6, align="center")
-    draw_poster(fr, t, W / 2, 1060, 0.74, 0.9, dur)
-    say(fr, "Hujan. Penat. Tapi jadi jugak.", 1560, t, 2.3, align="center")
-    say(fr, "Jom kami cerita  \u2193", 1636, t, 3.0, align="center")
+    say(fr, "dalam 1 hari.", 490, t, 0.6, align="center")
+    draw_poster(fr, t, W / 2, 895, 0.6, 0.9, dur)
+    say(fr, "Hujan. Penat. Tapi jadi jugak.", 1290, t, 2.3, align="center")
+    say(fr, "Jom kami cerita  \u2193", 1356, t, 3.0, align="center")
     return fr
 
 
@@ -342,19 +358,24 @@ def scene_logo(t, dur):
     fr = Image.new("RGBA", (W, H), NAVY + (255,))
     p = ease_out(t / 0.8)
     s = 0.92 + 0.08 * p + 0.03 * ease_io(t / dur)
-    lw = int(900 * s)
+    lw = int(600 * s)
     lg = LOGO_IMG.resize((lw, lw), Image.LANCZOS)
     if p < 1:
         lg.putalpha(lg.getchannel("A").point(lambda v: int(v * p)))
-    fr.alpha_composite(lg, (int(W / 2 - lw / 2), int(620 - lw / 2)))
-    say(fr, "Tutup kedai, kira sales...", 1110, t, 0.5, align="center")
-    say(fr, "Dapat sales", 1186, t, 1.0, align="center")
-    say(fr, "RM2,500 sehari.", 1262, t, 1.3, align="center", big=True)
-    say(fr, "Penat. Hujan. Tapi berbaloi.", 1370, t, 1.9, align="center")
-    say(fr, "Terima kasih Shah Alam!", 1446, t, 2.4, align="center")
-    say(fr, "Terima kasih MP Sepang", 1522, t, 2.8, align="center")
-    say(fr, "bagi kami peluang ni.", 1598, t, 3.0, align="center")
-    say(fr, "Follow, jumpa di event seterusnya.", 1674, t, 3.5, align="center")
+    fr.alpha_composite(lg, (int(W / 2 - lw / 2), int(520 - lw / 2)))
+    y = 790
+    for k, (ln, st, big) in enumerate([
+        ("Tutup kedai, kira sales...", 0.5, False),
+        ("Dapat sales", 1.0, False),
+        ("RM2,500 sehari.", 1.3, True),
+        ("Penat. Hujan. Tapi berbaloi.", 1.9, False),
+        ("Terima kasih Shah Alam!", 2.4, False),
+        ("Terima kasih MP Sepang", 2.8, False),
+        ("bagi kami peluang ni.", 3.0, False),
+        ("Follow, jumpa di event seterusnya.", 3.5, False),
+    ]):
+        say(fr, ln, y, t, st, align="center", big=big)
+        y += LINE + (12 if big else 0)
     return fr
 
 
