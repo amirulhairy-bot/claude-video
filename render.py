@@ -245,26 +245,44 @@ def draw_poster(fr, t, cx, cy, base, start, dur):
     fr.alpha_composite(c, (int(cx - cw / 2), int(cy - ch / 2 + (1 - p) * 60)))
 
 
+# Uniform typography: one font, one colour, one size (RM2,500 slightly larger).
+TXT_FONT = SANS_SB
+TXT_SIZE = 50
+BIG_SIZE = 66
+LINE = 76
+LEFT = 70
+
+
+def say(fr, text, y, t, start, align="left", big=False):
+    sp = text_sprite(text, TXT_FONT, BIG_SIZE if big else TXT_SIZE, WHITE)
+    x = LEFT if align == "left" else W / 2
+    anim_line(fr, sp, x, y, t, start, align=align)
+
+
+def say_block(fr, lines, t, start=0.25, gap=0.3, bottom=1790):
+    """Left-aligned block anchored to the bottom of the frame."""
+    y = bottom - LINE * len(lines)
+    for k, ln in enumerate(lines):
+        say(fr, ln, y + k * LINE, t, start + k * gap)
+
+
 def scene_hook(t, dur):
     i = min(int(t * FPS), len(VID) - 1)
     fr = Image.fromarray(VID[i]).convert("RGBA")
     fr = Image.alpha_composite(fr, GRAD_HOOK)
-    # kicker
-    pill(fr, "EVENT PERTAMA KAMI", W / 2, 250, t, 0.05, size=32)
-    # counter
+    say(fr, "Event pertama kami.", 250, t, 0.0, align="center")
+    say(fr, "Dapat sales", 326, t, 0.15, align="center")
     p = ease_out((t - 0.2) / 1.8)
     val = int(round(2500 * p / 10.0)) * 10
-    num = f"RM{val:,}"
     pop = 1.0
     if 2.0 < t < 2.4:
         pop = 1 + 0.08 * math.sin((t - 2.0) / 0.4 * math.pi)
-    sp = text_sprite(num, SERIF, 230, CREAM)
-    anim_line(fr, text_sprite("Dapat sales", SERIF, 80, GOLD), W / 2, 450, t, 0.0)
-    put(fr, sp, W / 2, 560, alpha=ease_out(t / 0.25), scale=pop)
-    anim_line(fr, text_sprite("dalam 1 hari.", SERIF, 110, WHITE), W / 2, 840, t, 0.6)
-    draw_poster(fr, t, W / 2, 1262, 0.58, 0.9, dur)
-    anim_line(fr, text_sprite("Hujan. Penat. Tapi jadi jugak.", SANS_SB, 50, WHITE), W / 2, 1570, t, 2.3)
-    anim_line(fr, text_sprite("Jom kami cerita  ↓", SANS_B, 54, GOLD), W / 2, 1650, t, 3.0)
+    put(fr, text_sprite(f"RM{val:,}", TXT_FONT, BIG_SIZE, WHITE), W / 2, 402,
+        alpha=ease_out((t - 0.2) / 0.25), scale=pop)
+    say(fr, "dalam 1 hari.", 494, t, 0.6, align="center")
+    draw_poster(fr, t, W / 2, 1060, 0.74, 0.9, dur)
+    say(fr, "Hujan. Penat. Tapi jadi jugak.", 1560, t, 2.3, align="center")
+    say(fr, "Jom kami cerita  \u2193", 1636, t, 3.0, align="center")
     return fr
 
 
@@ -272,24 +290,24 @@ def scene_booth(t, dur):
     # 1932x2576 source; 9:16 crop height 2576 -> width 1449
     fr = kb_frame(IM1, t, dur, (966, 1330, 2500), (966, 1420, 2150))
     fr = Image.alpha_composite(fr, GRAD)
-    brand_tag(fr)
-    step_tag(fr, "PETANG TU", t)
-    anim_line(fr, text_sprite("Siap setup je,", SERIF, 92, CREAM), 90, 1360, t, 0.3, align="left")
-    anim_line(fr, text_sprite("hujan turun.", SERIF, 92, CREAM), 90, 1465, t, 0.45, align="left")
-    anim_line(fr, text_sprite("Lantai basah, orang lari berteduh.", SANS_M, 44, WHITE), 90, 1610, t, 1.1, align="left")
-    anim_line(fr, text_sprite("Dalam hati: \u201cAlamak, habislah kita...\u201d", SANS_M, 44, WHITE), 90, 1670, t, 1.4, align="left")
+    say_block(fr, [
+        "Petang tu, siap setup je,",
+        "hujan turun.",
+        "Lantai basah, orang lari berteduh.",
+        "Dalam hati: \u201cAlamak, habislah kita...\u201d",
+    ], t)
     return fr
 
 
 def scene_team(t, dur):
     fr = kb_frame(IM2, t, dur, (900, 1450, 2100), (820, 1350, 2500))
     fr = Image.alpha_composite(fr, GRAD)
-    brand_tag(fr)
-    step_tag(fr, "TAPI KAMI TAK GIVE UP", t)
-    anim_line(fr, text_sprite("Senyum je,", SERIF, 92, CREAM), 90, 1360, t, 0.3, align="left")
-    anim_line(fr, text_sprite("terus grind coffee.", SERIF, 92, CREAM), 90, 1465, t, 0.45, align="left")
-    anim_line(fr, text_sprite("Penat? Memang penat.", SANS_M, 44, WHITE), 90, 1610, t, 1.1, align="left")
-    anim_line(fr, text_sprite("Tapi customer mula datang satu-satu.", SANS_M, 44, WHITE), 90, 1670, t, 1.3, align="left")
+    say_block(fr, [
+        "Tapi kami tak give up.",
+        "Senyum je, terus grind coffee.",
+        "Penat? Memang penat.",
+        "Tapi customer mula datang satu-satu.",
+    ], t)
     return fr
 
 
@@ -297,12 +315,13 @@ def scene_offer(t, dur):
     # push from the whole booth into the RM8 sign on the right
     fr = kb_frame(IM3, t, dur, (1100, 1500, 2400), (1580, 1850, 1350))
     fr = Image.alpha_composite(fr, GRAD)
-    brand_tag(fr)
-    step_tag(fr, "MALAM TU", t)
-    anim_line(fr, text_sprite("Customer datang", SERIF, 92, CREAM), 90, 1360, t, 0.3, align="left")
-    anim_line(fr, text_sprite("tak putus-putus.", SERIF, 92, CREAM), 90, 1465, t, 0.45, align="left")
-    anim_line(fr, text_sprite("Americano RM8 laku keras.", SANS_B, 50, GOLD), 90, 1610, t, 1.2, align="left")
-    anim_line(fr, text_sprite("Tangan lenguh, tapi hujung-hujung berbaloi.", SANS_M, 44, WHITE), 90, 1680, t, 1.6, align="left")
+    say_block(fr, [
+        "Malam tu, customer datang",
+        "tak putus-putus.",
+        "Americano RM8 laku keras.",
+        "Tangan lenguh, tapi",
+        "hujung-hujung berbaloi.",
+    ], t, gap=0.28)
     return fr
 
 
@@ -327,13 +346,13 @@ def scene_logo(t, dur):
     lg = LOGO_IMG.resize((lw, lw), Image.LANCZOS)
     if p < 1:
         lg.putalpha(lg.getchannel("A").point(lambda v: int(v * p)))
-    fr.alpha_composite(lg, (int(W / 2 - lw / 2), int(700 - lw / 2)))
-    anim_line(fr, text_sprite("Tutup kedai, kira sales...", SANS_SB, 44, WHITE), W / 2, 1180, t, 0.5)
-    anim_line(fr, text_sprite("Dapat sales", SERIF, 70, GOLD), W / 2, 1250, t, 1.0)
-    anim_line(fr, text_sprite("RM2,500.", SERIF, 150, CREAM), W / 2, 1320, t, 1.3)
-    anim_line(fr, text_sprite("Penat. Hujan. Tapi berbaloi.", SERIF, 66, GOLD), W / 2, 1520, t, 1.9)
-    anim_line(fr, text_sprite("Terima kasih Shah Alam!", SANS_SB, 42, WHITE), W / 2, 1630, t, 2.5)
-    pill(fr, "FOLLOW · JUMPA DI EVENT SETERUSNYA", W / 2, 1720, t, 2.9, size=32)
+    fr.alpha_composite(lg, (int(W / 2 - lw / 2), int(620 - lw / 2)))
+    say(fr, "Tutup kedai, kira sales...", 1110, t, 0.5, align="center")
+    say(fr, "Dapat sales", 1186, t, 1.0, align="center")
+    say(fr, "RM2,500.", 1262, t, 1.3, align="center", big=True)
+    say(fr, "Penat. Hujan. Tapi berbaloi.", 1370, t, 1.9, align="center")
+    say(fr, "Terima kasih Shah Alam!", 1446, t, 2.4, align="center")
+    say(fr, "Follow, jumpa di event seterusnya.", 1522, t, 2.8, align="center")
     return fr
 
 
