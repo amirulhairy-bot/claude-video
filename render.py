@@ -352,7 +352,9 @@ def scene_logo(t, dur):
     say(fr, "RM2,500.", 1262, t, 1.3, align="center", big=True)
     say(fr, "Penat. Hujan. Tapi berbaloi.", 1370, t, 1.9, align="center")
     say(fr, "Terima kasih Shah Alam!", 1446, t, 2.4, align="center")
-    say(fr, "Follow, jumpa di event seterusnya.", 1522, t, 2.8, align="center")
+    say(fr, "Terima kasih MP Sepang", 1522, t, 2.8, align="center")
+    say(fr, "bagi kami peluang ni.", 1598, t, 3.0, align="center")
+    say(fr, "Follow, jumpa di event seterusnya.", 1674, t, 3.5, align="center")
     return fr
 
 
@@ -432,7 +434,7 @@ def main():
         (scene_booth, 4.6),
         (scene_team, 4.6),
         (scene_offer, 4.6),
-        (scene_logo, 5.6),
+        (scene_logo, 6.4),
     ]
     XF = 0.3  # crossfade seconds
     starts = []
