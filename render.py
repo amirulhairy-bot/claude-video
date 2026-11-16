@@ -218,6 +218,33 @@ POSTER_OFF = (0, 0)
 LOGO_IMG = None
 
 
+def draw_poster(fr, t, cx, cy, base, start, dur):
+    """Glass poster card with entrance, slow drift and one sheen sweep."""
+    p = ease_out((t - start) / 0.6)
+    if p <= 0:
+        return
+    s = base * (0.9 + 0.1 * p + 0.03 * ease_io(t / dur))
+    card = POSTER_IMG
+    sp_t = (t - start - 0.8) / 1.1
+    if 0 < sp_t < 1:
+        card = card.copy()
+        ph_, pw_ = POSTER_MASK.shape
+        yy = np.arange(ph_)[:, None]
+        xx = np.arange(pw_)[None, :]
+        centre = -500 + sp_t * (pw_ + ph_ * 0.5 + 1000)
+        d = (xx + yy * 0.5) - centre
+        band = np.exp(-(d / 70.0) ** 2) * 120 + np.exp(-((d - 130) / 22.0) ** 2) * 70
+        sheen = np.zeros((ph_, pw_, 4), dtype=np.uint8)
+        sheen[..., :3] = 255
+        sheen[..., 3] = np.clip(band * POSTER_MASK, 0, 255).astype(np.uint8)
+        card.alpha_composite(Image.fromarray(sheen, "RGBA"), POSTER_OFF)
+    cw, ch = int(card.width * s), int(card.height * s)
+    c = card.resize((cw, ch), Image.LANCZOS)
+    if p < 1:
+        c.putalpha(c.getchannel("A").point(lambda v: int(v * p)))
+    fr.alpha_composite(c, (int(cx - cw / 2), int(cy - ch / 2 + (1 - p) * 60)))
+
+
 def scene_hook(t, dur):
     i = min(int(t * FPS), len(VID) - 1)
     fr = Image.fromarray(VID[i]).convert("RGBA")
@@ -235,8 +262,9 @@ def scene_hook(t, dur):
     anim_line(fr, text_sprite("Dapat sales", SERIF, 80, GOLD), W / 2, 450, t, 0.0)
     put(fr, sp, W / 2, 560, alpha=ease_out(t / 0.25), scale=pop)
     anim_line(fr, text_sprite("dalam 1 hari.", SERIF, 110, WHITE), W / 2, 840, t, 0.6)
-    anim_line(fr, text_sprite("Hujan. Penat. Tapi jadi jugak.", SANS_SB, 50, WHITE), W / 2, 1480, t, 2.3)
-    anim_line(fr, text_sprite("Jom kami cerita  ↓", SANS_B, 54, GOLD), W / 2, 1560, t, 3.0)
+    draw_poster(fr, t, W / 2, 1262, 0.58, 0.9, dur)
+    anim_line(fr, text_sprite("Hujan. Penat. Tapi jadi jugak.", SANS_SB, 50, WHITE), W / 2, 1570, t, 2.3)
+    anim_line(fr, text_sprite("Jom kami cerita  ↓", SANS_B, 54, GOLD), W / 2, 1650, t, 3.0)
     return fr
 
 
@@ -274,7 +302,7 @@ def scene_offer(t, dur):
     anim_line(fr, text_sprite("Customer datang", SERIF, 92, CREAM), 90, 1360, t, 0.3, align="left")
     anim_line(fr, text_sprite("tak putus-putus.", SERIF, 92, CREAM), 90, 1465, t, 0.45, align="left")
     anim_line(fr, text_sprite("Americano RM8 laku keras.", SANS_B, 50, GOLD), 90, 1610, t, 1.2, align="left")
-    anim_line(fr, text_sprite("Tangan lenguh, tapi hati senang.", SANS_M, 44, WHITE), 90, 1680, t, 1.6, align="left")
+    anim_line(fr, text_sprite("Tangan lenguh, tapi hujung-hujung berbaloi.", SANS_M, 44, WHITE), 90, 1680, t, 1.6, align="left")
     return fr
 
 
@@ -284,29 +312,7 @@ def scene_event(t, dur):
     step_tag_y = 210
     anim_line(fr, text_sprite("MULA-MULA", SANS_B, 36, GOLD, tracking=5), W / 2, step_tag_y + 40, t, 0.1)
     anim_line(fr, text_sprite("Dapat slot kat HPPKS.", SERIF, 84, CREAM), W / 2, 350, t, 0.25)
-    # poster card
-    p = ease_out((t - 0.2) / 0.6)
-    s = 0.9 + 0.1 * p + 0.03 * ease_io(t / dur)
-    card = POSTER_IMG
-    sp_t = (t - 1.0) / 1.1
-    if 0 < sp_t < 1:
-        card = card.copy()
-        ph_, pw_ = POSTER_MASK.shape
-        yy = np.arange(ph_)[:, None]
-        xx = np.arange(pw_)[None, :]
-        centre = -500 + sp_t * (pw_ + ph_ * 0.5 + 1000)
-        d = (xx + yy * 0.5) - centre
-        band = np.exp(-(d / 70.0) ** 2) * 120 + np.exp(-((d - 130) / 22.0) ** 2) * 70
-        sheen = np.zeros((ph_, pw_, 4), dtype=np.uint8)
-        sheen[..., :3] = 255
-        sheen[..., 3] = np.clip(band * POSTER_MASK, 0, 255).astype(np.uint8)
-        card.alpha_composite(Image.fromarray(sheen, "RGBA"), POSTER_OFF)
-    cw, ch = int(card.width * s), int(card.height * s)
-    c = card.resize((cw, ch), Image.LANCZOS)
-    if p < 1:
-        a = c.getchannel("A").point(lambda v: int(v * p))
-        c.putalpha(a)
-    fr.alpha_composite(c, (int(W / 2 - cw / 2), int(990 - ch / 2 + (1 - p) * 60)))
+    draw_poster(fr, t, W / 2, 990, 1.0, 0.2, dur)
     anim_line(fr, text_sprite("Kali pertama kami masuk event besar.", SANS_SB, 42, WHITE), W / 2, 1560, t, 0.9)
     anim_line(fr, text_sprite("14–15 Nov · Dataran Kemerdekaan Shah Alam", SANS_M, 36, CREAM), W / 2, 1625, t, 1.15)
     anim_line(fr, text_sprite("Jujur? Berdebar gila.", SANS_B, 46, GOLD), W / 2, 1720, t, 1.6)
@@ -404,7 +410,6 @@ def main():
     hook_dur = (len(VID) - 1) / FPS
     scenes = [
         (scene_hook, hook_dur),
-        (scene_event, 4.6),
         (scene_booth, 4.6),
         (scene_team, 4.6),
         (scene_offer, 4.6),
