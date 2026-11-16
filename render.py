@@ -349,7 +349,7 @@ def scene_logo(t, dur):
     fr.alpha_composite(lg, (int(W / 2 - lw / 2), int(620 - lw / 2)))
     say(fr, "Tutup kedai, kira sales...", 1110, t, 0.5, align="center")
     say(fr, "Dapat sales", 1186, t, 1.0, align="center")
-    say(fr, "RM2,500.", 1262, t, 1.3, align="center", big=True)
+    say(fr, "RM2,500 sehari.", 1262, t, 1.3, align="center", big=True)
     say(fr, "Penat. Hujan. Tapi berbaloi.", 1370, t, 1.9, align="center")
     say(fr, "Terima kasih Shah Alam!", 1446, t, 2.4, align="center")
     say(fr, "Terima kasih MP Sepang", 1522, t, 2.8, align="center")
