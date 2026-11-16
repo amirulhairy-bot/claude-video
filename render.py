@@ -213,6 +213,8 @@ def step_tag(frame, label, t, start=0.15):
 VID = None
 IM1 = IM2 = IM3 = None
 POSTER_IMG = POSTER_BG = None
+POSTER_MASK = None
+POSTER_OFF = (0, 0)
 LOGO_IMG = None
 
 
@@ -230,6 +232,7 @@ def scene_hook(t, dur):
     if 2.0 < t < 2.4:
         pop = 1 + 0.08 * math.sin((t - 2.0) / 0.4 * math.pi)
     sp = text_sprite(num, SERIF, 230, CREAM)
+    anim_line(fr, text_sprite("Dapat sales", SERIF, 80, GOLD), W / 2, 450, t, 0.0)
     put(fr, sp, W / 2, 560, alpha=ease_out(t / 0.25), scale=pop)
     anim_line(fr, text_sprite("dalam 1 hari.", SERIF, 110, WHITE), W / 2, 840, t, 0.6)
     anim_line(fr, text_sprite("Hujan. Penat. Tapi jadi jugak.", SANS_SB, 50, WHITE), W / 2, 1480, t, 2.3)
@@ -256,7 +259,7 @@ def scene_team(t, dur):
     brand_tag(fr)
     step_tag(fr, "TAPI KAMI TAK GIVE UP", t)
     anim_line(fr, text_sprite("Senyum je,", SERIF, 92, CREAM), 90, 1360, t, 0.3, align="left")
-    anim_line(fr, text_sprite("teruskan buat air.", SERIF, 92, CREAM), 90, 1465, t, 0.45, align="left")
+    anim_line(fr, text_sprite("terus grind coffee.", SERIF, 92, CREAM), 90, 1465, t, 0.45, align="left")
     anim_line(fr, text_sprite("Penat? Memang penat.", SANS_M, 44, WHITE), 90, 1610, t, 1.1, align="left")
     anim_line(fr, text_sprite("Tapi customer mula datang satu-satu.", SANS_M, 44, WHITE), 90, 1670, t, 1.3, align="left")
     return fr
@@ -285,12 +288,25 @@ def scene_event(t, dur):
     p = ease_out((t - 0.2) / 0.6)
     s = 0.9 + 0.1 * p + 0.03 * ease_io(t / dur)
     card = POSTER_IMG
+    sp_t = (t - 1.0) / 1.1
+    if 0 < sp_t < 1:
+        card = card.copy()
+        ph_, pw_ = POSTER_MASK.shape
+        yy = np.arange(ph_)[:, None]
+        xx = np.arange(pw_)[None, :]
+        centre = -500 + sp_t * (pw_ + ph_ * 0.5 + 1000)
+        d = (xx + yy * 0.5) - centre
+        band = np.exp(-(d / 70.0) ** 2) * 120 + np.exp(-((d - 130) / 22.0) ** 2) * 70
+        sheen = np.zeros((ph_, pw_, 4), dtype=np.uint8)
+        sheen[..., :3] = 255
+        sheen[..., 3] = np.clip(band * POSTER_MASK, 0, 255).astype(np.uint8)
+        card.alpha_composite(Image.fromarray(sheen, "RGBA"), POSTER_OFF)
     cw, ch = int(card.width * s), int(card.height * s)
     c = card.resize((cw, ch), Image.LANCZOS)
     if p < 1:
         a = c.getchannel("A").point(lambda v: int(v * p))
         c.putalpha(a)
-    fr.alpha_composite(c, (int(W / 2 - cw / 2), int(1010 - ch / 2 + (1 - p) * 60)))
+    fr.alpha_composite(c, (int(W / 2 - cw / 2), int(990 - ch / 2 + (1 - p) * 60)))
     anim_line(fr, text_sprite("Kali pertama kami masuk event besar.", SANS_SB, 42, WHITE), W / 2, 1560, t, 0.9)
     anim_line(fr, text_sprite("14–15 Nov · Dataran Kemerdekaan Shah Alam", SANS_M, 36, CREAM), W / 2, 1625, t, 1.15)
     anim_line(fr, text_sprite("Jujur? Berdebar gila.", SANS_B, 46, GOLD), W / 2, 1720, t, 1.6)
@@ -306,8 +322,9 @@ def scene_logo(t, dur):
     if p < 1:
         lg.putalpha(lg.getchannel("A").point(lambda v: int(v * p)))
     fr.alpha_composite(lg, (int(W / 2 - lw / 2), int(700 - lw / 2)))
-    anim_line(fr, text_sprite("Tutup kedai, kira sales...", SANS_SB, 44, WHITE), W / 2, 1250, t, 0.5)
-    anim_line(fr, text_sprite("RM2,500.", SERIF, 150, CREAM), W / 2, 1320, t, 1.2)
+    anim_line(fr, text_sprite("Tutup kedai, kira sales...", SANS_SB, 44, WHITE), W / 2, 1180, t, 0.5)
+    anim_line(fr, text_sprite("Dapat sales", SERIF, 70, GOLD), W / 2, 1250, t, 1.0)
+    anim_line(fr, text_sprite("RM2,500.", SERIF, 150, CREAM), W / 2, 1320, t, 1.3)
     anim_line(fr, text_sprite("Penat. Hujan. Tapi berbaloi.", SERIF, 66, GOLD), W / 2, 1520, t, 1.9)
     anim_line(fr, text_sprite("Terima kasih Shah Alam!", SANS_SB, 42, WHITE), W / 2, 1630, t, 2.5)
     pill(fr, "FOLLOW · JUMPA DI EVENT SETERUSNYA", W / 2, 1720, t, 2.9, size=32)
@@ -321,28 +338,66 @@ def main():
     IM2 = Image.open(IMG2).convert("RGB")
     IM3 = Image.open(IMG3).convert("RGB")
 
-    # poster card: crop out the social overlay, round corners, add shadow
+    # poster on a frosted-glass pane
+    global POSTER_MASK, POSTER_OFF
     pst = Image.open(POSTER).convert("RGB").crop((3, 3, 406, 486))
-    pw = 760
+    pw = 700
     ph = int(pst.height * pw / pst.width)
     pst = pst.resize((pw, ph), Image.LANCZOS).filter(ImageFilter.UnsharpMask(2, 80, 2))
-    mask = Image.new("L", (pw, ph), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, pw - 1, ph - 1), radius=36, fill=255)
-    card = Image.new("RGBA", (pw + 120, ph + 120), (0, 0, 0, 0))
+    pad, sh = 42, 70
+    gw, gh = pw + 2 * pad, ph + 2 * pad
+    card = Image.new("RGBA", (gw + 2 * sh, gh + 2 * sh), (0, 0, 0, 0))
+    # soft shadow
     shadow = Image.new("RGBA", card.size, (0, 0, 0, 0))
-    ImageDraw.Draw(shadow).rounded_rectangle((60, 75, 60 + pw, 75 + ph), radius=36, fill=(0, 0, 0, 200))
-    card = Image.alpha_composite(card, shadow.filter(ImageFilter.GaussianBlur(25)))
+    ImageDraw.Draw(shadow).rounded_rectangle((sh, sh + 20, sh + gw, sh + gh + 20), radius=56, fill=(0, 0, 0, 150))
+    card = Image.alpha_composite(card, shadow.filter(ImageFilter.GaussianBlur(30)))
+    # frosted pane: translucent white with vertical sheen
+    pane = np.zeros((gh, gw, 4), dtype=np.float32)
+    pane[..., :3] = 255
+    yy = np.linspace(0, 1, gh)[:, None]
+    xx = np.linspace(0, 1, gw)[None, :]
+    pane[..., 3] = 34 + 40 * np.clip(1 - (yy * 0.8 + xx * 0.4), 0, 1)
+    pane_img = Image.fromarray(pane.astype(np.uint8), "RGBA")
+    pmask = Image.new("L", (gw, gh), 0)
+    ImageDraw.Draw(pmask).rounded_rectangle((0, 0, gw - 1, gh - 1), radius=56, fill=255)
+    pane_img.putalpha(Image.fromarray((np.array(pmask) / 255.0 * np.array(pane_img.getchannel("A"))).astype(np.uint8)))
+    card.alpha_composite(pane_img, (sh, sh))
+    # glass edge: bright top-left rim fading to subtle bottom-right
+    rim = Image.new("RGBA", (gw, gh), (0, 0, 0, 0))
+    ImageDraw.Draw(rim).rounded_rectangle((1, 1, gw - 2, gh - 2), radius=55, outline=(255, 255, 255, 255), width=3)
+    ra = np.array(rim.getchannel("A")).astype(np.float32) * np.clip(0.85 - 0.6 * (yy * 0.6 + xx * 0.4), 0.18, 1)
+    rim.putalpha(Image.fromarray(ra.astype(np.uint8)))
+    card.alpha_composite(rim, (sh, sh))
+    # poster inside with inner shadow
+    inner = Image.new("RGBA", card.size, (0, 0, 0, 0))
+    ImageDraw.Draw(inner).rounded_rectangle((sh + pad, sh + pad + 8, sh + pad + pw, sh + pad + ph + 8), radius=30, fill=(0, 0, 0, 120))
+    card = Image.alpha_composite(card, inner.filter(ImageFilter.GaussianBlur(12)))
+    mask = Image.new("L", (pw, ph), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, pw - 1, ph - 1), radius=30, fill=255)
     pst_rgba = pst.convert("RGBA")
     pst_rgba.putalpha(mask)
-    card.alpha_composite(pst_rgba, (60, 60))
-    ring = Image.new("RGBA", card.size, (0, 0, 0, 0))
-    ImageDraw.Draw(ring).rounded_rectangle((58, 58, 62 + pw, 62 + ph), radius=38, outline=GOLD + (255,), width=4)
-    POSTER_IMG = Image.alpha_composite(card, ring)
+    card.alpha_composite(pst_rgba, (sh + pad, sh + pad))
+    # static glass reflection over the poster (diagonal gloss)
+    gloss = np.zeros((ph, pw, 4), dtype=np.float32)
+    gloss[..., :3] = 255
+    py = np.linspace(0, 1, ph)[:, None]
+    px = np.linspace(0, 1, pw)[None, :]
+    diag = px * 0.55 + py
+    gloss[..., 3] = np.where(diag < 0.42, 46 * (1 - diag / 0.42) + 18, 0) * (np.array(mask) / 255.0)
+    card.alpha_composite(Image.fromarray(gloss.astype(np.uint8), "RGBA"), (sh + pad, sh + pad))
+    POSTER_IMG = card
+    POSTER_MASK = np.array(mask, dtype=np.float32) / 255.0
+    POSTER_OFF = (sh + pad, sh + pad)
 
     bg = Image.open(IMG3).convert("RGB")
     bg = bg.transform((W, H), Image.EXTENT, (240, 0, 240 + 2576 * W / H, 2576), Image.BILINEAR)
     bg = bg.filter(ImageFilter.GaussianBlur(40)).convert("RGBA")
-    POSTER_BG = Image.alpha_composite(bg, Image.new("RGBA", (W, H), NAVY + (190,)))
+    POSTER_BG = Image.alpha_composite(bg, Image.new("RGBA", (W, H), NAVY + (175,)))
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.ellipse((-200, 420, 520, 1140), fill=GOLD + (110,))
+    gd.ellipse((600, 900, 1350, 1650), fill=(70, 120, 210, 120))
+    POSTER_BG = Image.alpha_composite(POSTER_BG, glow.filter(ImageFilter.GaussianBlur(120)))
 
     LOGO_IMG = Image.open(LOGO).convert("RGBA")
 
