@@ -1,0 +1,14 @@
+{
+  "title": "Baca Bismillah",
+  "voice_lang": "ms",
+  "scenes": [
+    {"desc": "Adam lapar, capai ayam dengan tangan kiri", "caption": "Lapar!", "vo": "Wah, Adam lapar sangat!", "sfx": [["tummy", 0.1]]},
+    {"desc": "Abah angkat jari: tunggu!", "caption": "Eh, tunggu!", "vo": "Eh, tunggu dulu, Adam!", "sfx": [["stop", 0.0]]},
+    {"desc": "Adam teringat (mentol menyala)", "caption": "Apa kita baca dulu?", "vo": "Sebelum makan, kita baca apa ya?", "sfx": [["ding", 0.2]]},
+    {"desc": "Adam sebut Bismillah, kilauan emas", "caption": "Bismillah", "vo": "Bismillah!", "vo_child": true, "sfx": [["sparkle", 0.6]]},
+    {"desc": "Adam makan dengan tangan kanan", "caption": "Tangan kanan", "vo": "Makan dengan tangan kanan, dan ambil yang dekat dengan kita.", "sfx": [["munch", 0.2]]},
+    {"desc": "Keluarga melambai", "caption": "Baca Bismillah sebelum makan!", "vo": "Jom adik-adik, baca Bismillah sebelum makan!", "sfx": [["pop", 0.0]]}
+  ],
+  "scene_seconds": 5.0,
+  "endcard_seconds": 2.5
+}
