@@ -1,0 +1,22 @@
+{
+ "words": [
+  [0.00, 0.80, "EH,"],
+  [0.88, 1.16, "KENAPA"], [1.16, 1.36, "SEMUA"], [1.36, 1.52, "ORANG"],
+  [1.52, 1.82, "PANDANG"], [1.82, 2.80, "AKU?"],
+  [2.92, 3.30, "HAHA,"],
+  [3.30, 3.54, "SEBAB"], [3.54, 3.86, "LUGGAGE"], [3.86, 4.08, "NI"],
+  [4.08, 4.32, "BOLEH"], [4.32, 5.20, "TUNGGANG."],
+  [5.32, 5.54, "KORANG"], [5.54, 5.64, "NAK"], [5.64, 6.40, "CUBA?"],
+  [6.50, 6.86, "SEWA"], [6.86, 7.26, "AIRWHEEL"], [7.26, 8.16, "SE3S"],
+  [8.16, 8.52, "DEKAT"],
+  [8.52, 8.90, "AMSYAR"], [8.90, 9.08, "PACK"], [9.08, 10.0, "RENTAL."]
+ ],
+ "chunks": [[0], [1, 2, 3], [4, 5], [6], [7, 8, 9], [10, 11], [12, 13, 14], [15, 16, 17], [18], [19, 20, 21]],
+ "keywords": ["LUGGAGE", "TUNGGANG", "AIRWHEEL", "SE3S", "AMSYAR", "PACK", "RENTAL"],
+ "cap_y": 1010,
+ "tag": {"line1": "BOLEH SEWA", "line2": "AIRWHEEL SE3S", "start": 6.9, "end": 8.45, "y": 400, "pointer": false},
+ "chip": {"text": "TEMPAH SEKARANG", "start": 8.5, "y": 420},
+ "ring": {"x": 676, "y": 1272, "r": 58, "start": 6.9, "end": 8.45},
+ "end_title": "SEWA AIRWHEEL SE3S",
+ "end_sub": "Luggage pintar yang boleh ditunggang"
+}

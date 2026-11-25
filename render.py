@@ -2,7 +2,7 @@
 
 Output 1080x1920 @24fps. All overlays stay inside the IG Reels / TikTok safe zone:
   top 220px, bottom 480px, left 60px, right 140px (platform UI lives outside these).
-Usage: python3 render.py SRC_VIDEO LOGO_PNG FONT_DIR OUT_MP4
+Usage: python3 render.py SRC_VIDEO LOGO_PNG FONT_DIR OUT_MP4 CONFIG_JSON
 """
 import math
 import subprocess
@@ -11,7 +11,10 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-SRC, LOGO, FONTDIR, OUT = sys.argv[1:5]
+import json
+
+SRC, LOGO, FONTDIR, OUT, CFG_PATH = sys.argv[1:6]
+CFG = json.load(open(CFG_PATH))
 W, H, FPS = 1080, 1920, 24
 VID_DUR = 10.0
 END_DUR = 3.6
@@ -58,19 +61,11 @@ def prog(t, start, dur):
 
 
 # ---------- captions (word timings from transcription; brand name corrected) ----------
-WORDS = [
-    (0.94, 1.50, "DAH"), (1.50, 1.76, "SAMPAI"), (1.76, 2.30, "HOTEL,"),
-    (2.34, 2.54, "MESTI"), (2.54, 2.76, "KORANG"), (2.76, 2.96, "NAK"),
-    (2.96, 3.10, "BUAT"), (3.10, 3.36, "VLOG"), (3.36, 4.20, "KAN?"),
-    (4.32, 4.56, "TAKDE"), (4.56, 4.82, "KAMERA"), (4.82, 5.18, "SENDIRI"),
-    (5.18, 5.36, "PUN"), (5.36, 6.05, "TAKPE,"),
-    (6.10, 6.42, "SEWA"), (6.42, 6.96, "DJI"), (6.96, 7.24, "POCKET"), (7.24, 7.82, "3"),
-    (7.82, 8.30, "DEKAT"), (8.30, 8.82, "AMSYAR"), (8.82, 8.94, "PACK"), (8.94, 10.0, "RENTAL"),
-]
-CHUNKS = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13], [14, 15, 16, 17], [18], [19, 20, 21]]
-KEYWORDS = {"VLOG", "DJI", "POCKET", "3", "AMSYAR", "PACK", "RENTAL", "KAMERA"}
+WORDS = [tuple(w) for w in CFG["words"]]
+CHUNKS = CFG["chunks"]
+KEYWORDS = set(CFG["keywords"])
 CAP_FONT = font(80)
-CAP_Y = 1300  # caption centre line — above the bottom UI band
+CAP_Y = CFG["cap_y"]  # caption centre line — above the bottom UI band
 
 
 def chunk_span(ci):
@@ -174,7 +169,7 @@ TAG_F2 = font(46, 900)
 
 
 def product_tag():
-    l1, l2 = "BOLEH SEWA", "DJI POCKET 3"
+    l1, l2 = CFG["tag"]["line1"], CFG["tag"]["line2"]
     w = max(TAG_F2.getbbox(l2)[2], TAG_F1.getbbox(l1)[2]) + 60
     h = 126
     im = Image.new("RGBA", (w + 24, h), (0, 0, 0, 0))
@@ -206,7 +201,24 @@ def cta_chip(text, bg=WHITE, fg=BLUE):
     return im
 
 
-CHIP_TEMPAH = cta_chip("TEMPAH SEKARANG")
+CHIP_TEMPAH = cta_chip(CFG["chip"]["text"])
+
+
+def draw_ring(frame, t, rg):
+    """Pulsing highlight ring on the product (brand white/blue)."""
+    cx, cy, r = rg["x"], rg["y"], rg["r"]
+    fade = clamp(prog(t, rg["start"], 0.25)) * (1 - prog(t, rg["end"] - 0.25, 0.25))
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    grow = back_out(prog(t, rg["start"], 0.4))
+    rr = r * grow
+    d.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], outline=WHITE + (int(255 * fade),), width=7)
+    for k in range(2):
+        ph = ((t - rg["start"]) / 0.8 + k * 0.5) % 1
+        r2 = rr + 10 + 70 * ph
+        d.ellipse([cx - r2, cy - r2, cx + r2, cy + r2],
+                  outline=BLUE + (int(220 * (1 - ph) * fade),), width=6)
+    frame.alpha_composite(layer)
 
 
 def speed_lines(t, y, alpha=1.0):
@@ -274,8 +286,8 @@ def end_card(t_local, last_frame):
         half = int(220 * pr)
         d.rectangle([SAFE_CX - half, cy + 120, SAFE_CX + half, cy + 126], fill=WHITE + (255,))
     # taglines
-    for k, (txt, f, yy) in enumerate([("SEWA DJI POCKET 3", EC_F1, cy + 190),
-                                      ("Kamera vlog tanpa perlu beli", EC_F2, cy + 250)]):
+    for k, (txt, f, yy) in enumerate([(CFG["end_title"], EC_F1, cy + 190),
+                                      (CFG["end_sub"], EC_F2, cy + 250)]):
         pk = ease_out(prog(t_local, 0.6 + 0.12 * k, 0.4))
         if pk <= 0:
             continue
@@ -381,16 +393,17 @@ def main():
                     frame.alpha_composite(speed_lines(t, 0, 1 - prog(t, 0.8, 0.5)),
                                           (0, BADGE_POS[1] + BADGE.height + 14))
 
-            # product tag (when "DJI Pocket 3" is said) — right of the box
-            if 6.3 <= t < 8.3:
-                pt = back_out(prog(t, 6.35, 0.4))
-                out = ease_in_out(prog(t, 8.0, 0.25))
+            # product tag (when the product is named)
+            TG = CFG["tag"]
+            if TG["start"] - 0.05 <= t < TG["end"] + 0.05:
+                pt = back_out(prog(t, TG["start"], 0.4))
+                out = ease_in_out(prog(t, TG["end"] - 0.25, 0.25))
                 tx = SAFE_R - TAG.width // 2 - 10 + (1 - pt) * 300 + out * 400
-                ty = 880
+                ty = TG["y"]
                 paste_scaled(frame, TAG, tx, ty, 1, clamp(pt) * (1 - out))
                 # pointer line to the box
                 pl = ease_out(prog(t, 6.55, 0.35)) * (1 - out)
-                if pl > 0:
+                if pl > 0 and TG.get("pointer"):
                     d = ImageDraw.Draw(frame)
                     x1 = tx - TAG.width // 2
                     x0 = x1 - 110 * pl
@@ -400,9 +413,14 @@ def main():
                               outline=BLUE + (255,), width=5)
 
             # in-video CTA chip (as brand name is said)
-            if 8.2 <= t < 10.0:
-                pc = back_out(prog(t, 8.3, 0.4))
-                chip_y = 880
+            RG = CFG.get("ring")
+            if RG and RG["start"] <= t < RG["end"]:
+                draw_ring(frame, t, RG)
+
+            CH = CFG["chip"]
+            if CH["start"] - 0.1 <= t < VID_DUR:
+                pc = back_out(prog(t, CH["start"], 0.4))
+                chip_y = CH["y"]
                 paste_scaled(frame, CHIP_TEMPAH, SAFE_CX, chip_y + (1 - clamp(pc)) * 40, pc, clamp(pc * 2))
 
             # captions
